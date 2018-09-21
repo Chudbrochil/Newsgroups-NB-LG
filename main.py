@@ -19,7 +19,27 @@ def main():
 	print("First column in excel file:")
 	print(data[:, 0])
 	print("Entire data:")
-	print(data)
+	print(data.get_shape())
+
+	"""
+		Possible way for us to loop through nonzero data only...not sure if this
+	 	is more expensive than just looping through all data and ignoring zero values?
+	"""
+	# loop through every column
+	for i in range(data.get_shape()[1]):
+		# grab column i
+		current_col_csr = data.getcol(i)
+		# filter column i to only contain the nonzero entries
+		nonzero_current_col = current_col_csr.nonzero()
+		# says column entries are all 0s but they're actually i value
+		# print non_zero values for column i and row_val
+		for row_val in nonzero_current_col[0]:
+			print("row: " + str(row_val) + " col: " + str(i) + " value: ", end="")
+			print(data[row_val, i])
+
+
+
+#may need to use data.nonzero() to get tuple of rows and column indices that aren't 0 so we know what to loop over
 
 if __name__ == "__main__":
 	main()
