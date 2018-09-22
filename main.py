@@ -8,6 +8,12 @@ import time
 
 # https://stackoverflow.com/questions/38836100/accessing-sparse-matrix-elements
 
+"""
+	@authors:
+	Required Libraries: SciPy 1.0.0 (loading the npz format as a csr_matrix)
+"""
+
+
 def main():
 	#this should load in a csr_matrix
 	data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
@@ -21,6 +27,7 @@ def main():
 	print(data[:, 0])
 	print("Entire data:")
 	print(data.get_shape())
+	print("Classifications " + str(data[:, -1:]))
 
 	start = time.time()
 	# returns a tuple of lists ([row_indices], [col_indices])
@@ -38,6 +45,48 @@ def main():
 	end = time.time()
 	total_time = end - start
 	print(total_time)
+
+	# get possible classifications
+	classes = get_classifications(data[:, -1:])
+
+	#calculate total words in each class
+	#TODO write function to calculate total words in each class
+
+	# pass only the column of classifications
+	prior_probabilities= determine_prior_probabilities(data[:, -1:])
+	
+	# pass the dataset except the classifications
+	likelihood_probabilities = determine_likelihoods(data[:, :-1])
+
+# return a list of probabilities corresponding to that classification
+# [0.1, 0.05, ..., 0.8]
+# [1,   2,  ...  , 14]
+# calculate P(Y) -> # of examples labeled with class k / total examples
+def determine_prior_probabilities(classificaitons):
+	return ""
+
+# build a matrix: (classes x features) -> value is P(X|Y)
+# return matrix of probabilites
+# calculate P(X|Y) -> count # words in feature i with class k / total words in class k
+def determine_likelihoods(data, classes, total_words_in_class):
+	likelihood_probabilities = []
+	# for each classifcation
+	for label in classes:
+
+	return ""
+
+# get_classifications()
+# Obtaining the classifications from our data. For the DNA data, should be ["IE", "EI", "N"]
+def get_classifications(class_list):
+    classes = set()
+    for list in class_list:
+        classes.add(list[0])
+
+    list_of_classes = []
+    for element in classes:
+        list_of_classes.append(element)
+
+    return list_of_classes
 
 if __name__ == "__main__":
 	main()
