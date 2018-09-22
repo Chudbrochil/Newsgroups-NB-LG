@@ -35,15 +35,16 @@ def main():
 
     # How to loop through non zero data:
     print(non_zero_data)
-
+    # print(len(non_zero_data[0]))
+    #
+    # print(len(non_zero_data[1]))
+    start = time.time()
     # loop through every nonzero element
-    for rowEle in non_zero_data[0]:
-        for colEle in non_zero_data[1]:
-            print("Row index: " + str(rowEle) + " Col index: " + str(colEle))
-            print(data[rowEle, colEle])
-            randomAssignment = data[rowEle, colEle]
-            break
-        break
+    for i in range(len(non_zero_data[0])):
+        row_ele = non_zero_data[0][i]
+        col_ele = non_zero_data[1][i]
+        ran = data[row_ele, col_ele]
+        # print("Row: " + str(row_ele) + " col: " + str(col_ele) + " Value: " + str(data[row_ele, col_ele]))
 
     end = time.time()
     total_time = end - start
