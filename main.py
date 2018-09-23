@@ -9,8 +9,14 @@ import time
 # https://stackoverflow.com/questions/38836100/accessing-sparse-matrix-elements
 
 """
+    Project 2 CS 529 - Naive Bayes and Logistic Regression from scratch
+
     @authors:
-    Required Libraries: SciPy 1.0.0 (loading the npz format as a csr_matrix)
+        Tristin Glunt | tglunt@unm.edu
+        Anthony Galczak | ...
+
+    Required Libraries:
+        - SciPy 1.0.0 (loading the npz format as a csr_matrix) or hihgher
 """
 
 
@@ -18,26 +24,15 @@ def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
     print("Shape of matrix: " + str(data.shape))
-    # appears to be 0-indexed, and pandas chopped off the first row, so we need to start at the second row, and i didn't chop off first column
-    print("Value at (row 1, col 12): " + str(data[0, 12]))
+    print("Value at (row 0, col 12): " + str(data[0, 12]))
     print("Value that is a 0: " + str(data[0, 1]))
-    print("Column M in Excel file: ")
-    print(data[:, 11])
-    print("First column in excel file:")
-    print(data[:, 0])
-    print("Entire data:")
-    print(data.get_shape())
-    print("Classifications " + str(data[:, -1:]))
+    print("Entire data shape: " + str(data.get_shape()))
 
-    #start = time.time()
-    # returns a tuple of lists ([row_indices], [col_indices])
+    # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
-
-    # How to loop through non zero data:
     print(non_zero_data)
-    # print(len(non_zero_data[0]))
-    #
-    # print(len(non_zero_data[1]))
+
+    """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
     start = time.time()
     # loop through every nonzero element
     for i in range(len(non_zero_data[0])):
@@ -49,10 +44,10 @@ def main():
     end = time.time()
     total_time = end - start
     print(total_time)
+    """  --------------------------------------------  """
 
-    # get possible classifications
-    classes = get_classifications(data[:, -1:])
-    print("\n classes: " + str(classes))
+    #TODO load in file and get list of classifications... (can just hard code 0:20)
+    #classifcation_file = ...
 
     #calculate total words in each class
     #TODO write function to calculate total words in each class
@@ -64,9 +59,14 @@ def main():
     # pass the dataset except the classifications
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
 
+
+
+
 # for every class, count the total amount of words in that class
 def determine_total_words_in_classes(data, non_zero_data, classes):
     return ""
+
+
 
 # return a list of probabilities corresponding to that classification
 # [0.1, 0.05, ..., 0.8]
@@ -74,6 +74,9 @@ def determine_total_words_in_classes(data, non_zero_data, classes):
 # calculate P(Y) -> # of examples labeled with class k / total examples
 def determine_prior_probabilities(classifictions):
     return ""
+
+
+
 
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
@@ -100,22 +103,8 @@ def determine_likelihoods(data, non_zero_data, classes, total_words_in_class):
 
     return ""
 
-# get_classifications()
-# Obtaining the classifications from our data. For the DNA data, should be ["IE", "EI", "N"]
-def get_classifications(class_list):
-    classes = set()
 
-    # have to convert the csr_vector to an array
-    class_list = class_list.toarray()
 
-    for list in class_list:
-        classes.add(list[0])
-
-    list_of_classes = []
-    for element in classes:
-        list_of_classes.append(element)
-
-    return list_of_classes
 
 if __name__ == "__main__":
     main()
