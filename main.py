@@ -25,7 +25,7 @@ import operator
 
 def main():
     #this should load in a csr_matrix
-    data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
+    data = scipy.sparse.load_npz("training_sparse.npz")
 
     # Training naive bayes
     np_train(data)
