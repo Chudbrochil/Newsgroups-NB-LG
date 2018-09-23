@@ -154,8 +154,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
         current_val = data[row_index, col_index]
 
-        print(current_classification)
-        print(col_index)
+        print("current class: " + str(current_classification))
+        print("Current col: " + str(col_index))
 
         current_likelihood = likelihood_matrix[current_classification][col_index]
         current_likelihood += (current_val / laplace_denom)
