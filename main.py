@@ -140,16 +140,17 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
             current_classification = data[row_index, -1:].data[0]
             current_row_index = row_index
 
-        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
-        current_classification =- 1
         current_val = data[row_index, col_index]
 
-        current_likelihood = likelihood_matrix[current_classification][col_index]
-        current_likelihood += (current_val / laplace_denom)
+        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
+        current_likelihood = likelihood_matrix[current_classification - 1][col_index]
+        current_likelihood += (current_val / total_words_in_class["class" + str(current_classification)])
 
-        likelihood_matrix[current_classification][col_index] = current_likelihood
+        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
+        likelihood_matrix[current_classification - 1][col_index] = current_likelihood
 
 
+    print(np.sum(likelihood_matrix, axis=0))
     return likelihood_matrix
 
 
