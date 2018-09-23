@@ -24,10 +24,10 @@ import time
 def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
-    print("Shape of matrix: " + str(data.shape))
-    print("Value at (row 0, col 12): " + str(data[0, 11]))
-    print("Value that is a 0: " + str(data[0, 1]))
-    print("Entire data shape: " + str(data.get_shape()))
+    #print("Shape of matrix: " + str(data.shape))
+    #print("Value at (row 0, col 12): " + str(data[0, 11]))
+    #print("Value that is a 0: " + str(data[0, 1]))
+    #print("Entire data shape: " + str(data.get_shape()))
 
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
@@ -93,7 +93,7 @@ def determine_prior_probabilities(classifications):
     class_counts = {}
     prior_probabilities = {}
 
-    print(classifications.data)
+    #print(classifications.data)
 
     # initialize class counts for dictionary
     for i in range(1, 21):
@@ -157,9 +157,9 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
         current_val = data[row_index, col_index]
 
-        print(current_classification)
-        print(col_index)
-        
+        print("current class: " + str(current_classification))
+        print("Current col: " + str(col_index))
+
         current_likelihood = likelihood_matrix[current_classification][col_index]
         current_likelihood += (current_val / laplace_denom)
 
