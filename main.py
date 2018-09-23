@@ -46,6 +46,7 @@ def main():
     # print(total_time)
     # """  --------------------------------------------  """
 
+
     # Loading in classes as strings from newsgrouplabels.txt
     classes = load_classes("newsgrouplabels.txt")
 
@@ -56,7 +57,7 @@ def main():
     prior_probabilities= determine_prior_probabilities(data[:, -1:])
 
     # pass the dataset except the classifications
-    likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
+    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
 
 
 # for every class, count the total amount of words in that class
@@ -78,7 +79,7 @@ def determine_total_words_in_classes(data):
         current_class = classifications.data[x]
         total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
-    print(total_words_in_class)
+    #print(total_words_in_class)
     return total_words_in_class
 
 
@@ -104,17 +105,42 @@ def determine_prior_probabilities(classifications):
     # calculate the prior probabilities by dividing each class count by the total examples
     for i in range(1, 21):
         prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
-        print("Prior probability for class " + str(i) + " " + str(prior_probabilities["class" + str(i)]))
+        #print("Prior probability for class " + str(i) + " " + str(prior_probabilities["class" + str(i)]))
 
     return prior_probabilities
-
-
 
 
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-def determine_likelihoods(data, non_zero_data, classes, total_words_in_class):
+def determine_likelihoods(data, non_zero_data, total_words_in_class):
+
+    # Calculating row constants for initializing our 2D likelihood matrix.
+    # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
+    # We can split this up to say:
+    # (((Count of X in Y) + 1/61190) / (Words in Y + 1)) +
+    # ((1/61190) / (Words in Y + 1))
+    # We are initializing our values to the second term...
+    # ((1/61190) / (Words in Y + 1))
+    # TODO: Verify that 61190 is our number for laplace smoothing
+    initial_values = []
+    for key, value in total_words_in_class.items():
+        initial_value = 1.0 / (61190 * int(value))
+        initial_values.append(initial_value)
+
+    #print(initial_values)
+    #print(len(initial_values))
+
+    # Initializing our matrix with the second term, we will add the first term
+    # to these values in our "count of Xi in Yk" calculation.
+    likelihood_matrix = np.zeros((20, 61189))
+    for x in range(20):
+        for y in range(61189):
+            likelihood_matrix[x][y] = initial_values[x]
+
+    #print(likelihood_matrix)
+
+
     likelihood_probabilities = np.zeros((data.get_shape()[0], data.get_shape()[1]))
     print("Shape of likelihood matrix: " + str(likelihood_probabilities.shape))
     rows_nonzero = non_zero_data[0]
@@ -135,6 +161,7 @@ def determine_likelihoods(data, non_zero_data, classes, total_words_in_class):
             # likelihood_probabilities[label, col] = temp_probability
 
     return ""
+
 
 
 # Loads the file that has the newsgroup classifications in it and returns
