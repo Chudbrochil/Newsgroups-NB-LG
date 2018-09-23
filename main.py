@@ -61,6 +61,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
     # for every example
     for w in range(5):
+        print("On example: %d\n\n" % w)
         # test every possible classification
         for i in range(20):
             log_prior = math.log(prior_probabilities["class" + str(i+1)])
@@ -91,6 +92,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     for example in probabilities_for_each_example:
         prediction = -1
         for i in range(0, 20):
+            print(example[i])
             if(example[i] > current_highest_probability):
                 prediction = i+1
                 current_highest_probability = example[i]
@@ -149,30 +151,8 @@ def determine_prior_probabilities(classifications):
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 def determine_likelihoods(data, non_zero_data, total_words_in_class):
-    # num of features + 1
-    laplace_denom = 61190
 
-    # TODO: Re-write this comment a bit more concisely (Anthony)
-    # Calculating row constants for initializing our 2D likelihood matrix.
-    # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
-    # We can split this up to say:
-    # (((Count of X in Y) + 1/61190) / (Words in Y + 1)) +
-    # ((1/61190) / (Words in Y + 1))
-    # We are initializing our values to the second term...
-    # ((1/61190) / (Words in Y + 1))
-    # TODO: Verify that 61190 is our number for laplace smoothing
-    initial_values = []
-    for key, value in total_words_in_class.items():
-        initial_value = 1.0 / (laplace_denom * int(value))
-        initial_values.append(initial_value)
-
-    # Initializing our matrix with the second term, we will add the first term
-    # to these values in our "count of Xi in Yk" calculation.
-    likelihood_matrix = np.zeros((20, 61189))
-    for x in range(20):
-        for y in range(61189):
-            likelihood_matrix[x][y] = initial_values[x]
-
+    likelihood_matrix = initialize_likelihood_matrix(total_words_in_class)
     length_of_nonzero_data = len(non_zero_data[0])
 
     # saving current row saves us ~1.5m hits for the entire data
@@ -201,6 +181,30 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     print(np.sum(likelihood_matrix, axis=0))
     return likelihood_matrix
 
+
+def initialize_likelihood_matrix(total_words_in_class):
+    # TODO: Re-write this comment a bit more concisely (Anthony)
+    # Calculating row constants for initializing our 2D likelihood matrix.
+    # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
+    # We can split this up to say:
+    # (((Count of X in Y) + 1/61190) / (Words in Y + 1)) +
+    # ((1/61190) / (Words in Y + 1))
+    # We are initializing our values to the second term...
+    # ((1/61190) / (Words in Y + 1))
+    # TODO: Verify that 61190 is our number for laplace smoothing
+    initial_values = []
+    for key, value in total_words_in_class.items():
+        initial_value = 1.0 / (61190 * int(value))
+        initial_values.append(initial_value)
+
+    # Initializing our matrix with the second term, we will add the first term
+    # to these values in our "count of Xi in Yk" calculation.
+    likelihood_matrix = np.zeros((20, 61189))
+    for x in range(20):
+        for y in range(61189):
+            likelihood_matrix[x][y] = initial_values[x]
+
+    return likelihood_matrix
 
 
 # Loads the file that has the newsgroup classifications in it and returns
