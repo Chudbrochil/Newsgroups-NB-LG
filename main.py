@@ -4,6 +4,7 @@ import numpy as np
 import math
 import time
 import copy
+import operator
 
 # indexing into sparse matrix:
 # https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
@@ -69,7 +70,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
             for j in range(61189):
                 # count for current feature for current example
                 current_count = data[w, j]
-                
+
                 # log likelihood for current class and feature
                 log_of_likelihood = math.log(likelihood_probabilities[i][j])
 
@@ -86,16 +87,12 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
         probabilities_for_classes = []
 
     list_of_predictions = []
-    current_highest_probability = -1000000.0 #-math.inf
+
 
     for example in probabilities_for_each_example:
-        prediction = -1
-        print(example)
-        for i in range(0, 20):
-            if(example[i] > current_highest_probability):
-                prediction = i+1
-                current_highest_probability = example[i]
-        list_of_predictions.append(prediction)
+        # https://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list#
+        max_index = max(enumerate(example), key=operator.itemgetter(1))[0]
+        list_of_predictions.append((max_index+1)) # Since the classes are 1-indexed.
 
     print(list_of_predictions)
 
@@ -178,12 +175,10 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         total_words = total_words_in_class["class" + str(x + 1)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += (1 / 61189)
+            enhanced_likelihood += (1.0 / 61189)
             enhanced_likelihood /= (total_words + 1)
             likelihood_matrix[x][y] = enhanced_likelihood
 
-
-    print(np.sum(likelihood_matrix, axis=0))
     return likelihood_matrix
 
 
