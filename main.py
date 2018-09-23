@@ -29,21 +29,6 @@ def main():
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
-    # """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
-    # start = time.time()
-    # # loop through every nonzero element
-    # for i in range(len(non_zero_data[0])):
-    #     row_ele = non_zero_data[0][i]
-    #     col_ele = non_zero_data[1][i]
-    #     ran = data[row_ele, col_ele]
-    #     # print("Row: " + str(row_ele) + " col: " + str(col_ele) + " Value: " + str(data[row_ele, col_ele]))
-    #
-    # end = time.time()
-    # total_time = end - start
-    # print(total_time)
-    # """  --------------------------------------------  """
-
-
     # Loading in classes as strings from newsgrouplabels.txt
     classes = load_classes("newsgrouplabels.txt")
 
@@ -141,7 +126,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     current_row_index = -1
     for i in range(length_of_nonzero_data):
 
-        print(non_zero_data)
+        #print(non_zero_data)
 
         # getting coordinates of nonzero ele
         row_index = non_zero_data[0][i]
@@ -152,19 +137,14 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
             current_classification = data[row_index, -1:].data[0]
             current_row_index = row_index
 
+        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
+        current_classification =- 1
         current_val = data[row_index, col_index]
-
-        #print("current class: " + str(current_classification))
-        #print("Current col: " + str(col_index))
 
         current_likelihood = likelihood_matrix[current_classification][col_index]
         current_likelihood += (current_val / laplace_denom)
 
         likelihood_matrix[current_classification][col_index] = current_likelihood
-        # print("Current likelihood: " + str(current_likelihood))
-        # print("Log like: " + str(math.log(current_likelihood)))
-        # break
-
 
 
     return likelihood_matrix
