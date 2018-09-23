@@ -26,6 +26,11 @@ def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
 
+    # Training naive bayes
+    np_train(data)
+
+
+def np_train(data):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
@@ -40,6 +45,7 @@ def main():
 
     # pass the dataset except the classifications
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
+
 
 
 # for every class, count the total amount of words in that class
@@ -98,6 +104,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     # num of features + 1
     laplace_denom = 61190
 
+    # TODO: Re-write this comment a bit more concisely (Anthony)
     # Calculating row constants for initializing our 2D likelihood matrix.
     # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
     # We can split this up to say:
@@ -111,9 +118,6 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         initial_value = 1.0 / (laplace_denom * int(value))
         initial_values.append(initial_value)
 
-    #print(initial_values)
-    #print(len(initial_values))
-
     # Initializing our matrix with the second term, we will add the first term
     # to these values in our "count of Xi in Yk" calculation.
     likelihood_matrix = np.zeros((20, 61189))
@@ -122,11 +126,10 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
             likelihood_matrix[x][y] = initial_values[x]
 
     length_of_nonzero_data = len(non_zero_data[0])
+
     # saving current row saves us ~1.5m hits for the entire data
     current_row_index = -1
     for i in range(length_of_nonzero_data):
-
-        #print(non_zero_data)
 
         # getting coordinates of nonzero ele
         row_index = non_zero_data[0][i]
