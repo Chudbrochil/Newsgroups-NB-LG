@@ -149,24 +149,25 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
         #if we're dealing with a new row
         if(row_index != current_row_index):
-            current_classification = data[row_index, :-1]
+            current_classification = data[row_index, -1:].data[0]
             current_row_index = row_index
 
         current_val = data[row_index, col_index]
 
-        print("current class: " + str(current_classification))
-        print("Current col: " + str(col_index))
+        #print("current class: " + str(current_classification))
+        #print("Current col: " + str(col_index))
 
         current_likelihood = likelihood_matrix[current_classification][col_index]
         current_likelihood += (current_val / laplace_denom)
 
-        likelihood_matrix[current_classification][col_index] = math.log(current_likelihood)
-        print("Current likelihood: " + str(current_likelihood))
-        print("Log like: " + str(math.log(current_likelihood)))
+        likelihood_matrix[current_classification][col_index] = current_likelihood
+        # print("Current likelihood: " + str(current_likelihood))
+        # print("Log like: " + str(math.log(current_likelihood)))
+        # break
 
 
 
-    return ""
+    return likelihood_matrix
 
 
 
