@@ -49,6 +49,7 @@ def np_train(data):
     classify_training_data_test(data[:5, :], prior_probabilities, likelihood_probabilities)
 
 
+# y_prediction function
 def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
 
     print("Starting classification...")
@@ -61,13 +62,13 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     # for every example
     for w in range(5):
         # test every possible classification
-        for i in range(1, 21):
-            log_prior = math.log(prior_probabilities["class" + str(i)])
+        for i in range(20):
+            log_prior = math.log(prior_probabilities["class" + str(i+1)])
             # go through every feature
             for j in range(61189):
                 # count for current feature for current example
                 current_count = data[w, j]
-                print(current_count)
+                #print(current_count)
 
                 # log likelihood for current class and feature
                 log_of_likelihood = math.log(likelihood_probabilities[i][j])
@@ -87,11 +88,13 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     list_of_predictions = []
     current_highest_probability = 0
 
-    for example in probabilities_for_classes:
+    for example in probabilities_for_each_example:
+        prediction = -1
         for i in range(0, 20):
             if(example[i] > current_highest_probability):
                 prediction = i+1
                 current_highest_probability = example[i]
+        list_of_predictions.append(prediction)
 
     print(list_of_predictions)
 
