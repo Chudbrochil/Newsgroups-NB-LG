@@ -13,10 +13,10 @@ import time
 
     @authors:
         Tristin Glunt | tglunt@unm.edu
-        Anthony Galczak | ...
+        Anthony Galczak | agalczak@unm.edu
 
     Required Libraries:
-        - SciPy 1.0.0 (loading the npz format as a csr_matrix) or hihgher
+        - SciPy 1.0.0 (loading the npz format as a csr_matrix) or higher
 """
 
 
@@ -32,11 +32,7 @@ def main():
     non_zero_data = data.nonzero()
     print(non_zero_data)
 
-<<<<<<< HEAD
     # """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
-=======
-    """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
->>>>>>> 2cf7178a33d21211c1ee6647ec0b4092073c630f
     # start = time.time()
     # # loop through every nonzero element
     # for i in range(len(non_zero_data[0])):
@@ -48,58 +44,42 @@ def main():
     # end = time.time()
     # total_time = end - start
     # print(total_time)
-<<<<<<< HEAD
     # """  --------------------------------------------  """
-=======
-    """  --------------------------------------------  """
->>>>>>> 2cf7178a33d21211c1ee6647ec0b4092073c630f
 
-    #TODO load in file and get list of classifications... (can just hard code 0:20)
+    # Loading in classes as strings from newsgrouplabels.txt
     classes = load_classes("newsgrouplabels.txt")
-    #classifcation_file = ...
 
-    #calculate total words in each class
-    #TODO write function to calculate total words in each class
-    total_words_in_class = determine_total_words_in_classes(data, non_zero_data, classes)
+    # Calculate total # of words per a class. Needed for determine_likelihoods.
+    total_words_in_class = determine_total_words_in_classes(data)
 
-    # pass only the column of classifications
-    #prior_probabilities= determine_prior_probabilities(data[:, -1:])
+    # Calculate the ratio of prior probabilities, i.e. given_class/total_examples
+    prior_probabilities= determine_prior_probabilities(data[:, -1:])
 
     # pass the dataset except the classifications
-    #likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
-
-
+    likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
 
 
 # for every class, count the total amount of words in that class
-def determine_total_words_in_classes(data, non_zero_data, classes):
+def determine_total_words_in_classes(data):
 
     # We don't want the class counts to interfere with data counts
+    classifications = data[:,-1:]
     data = data[:,0:-1]
 
     # Get the sum of each row, this returns a column vector
     row_sums = data.sum(axis=1)
 
+    # Initializing 20 dictionary elements for each newsgroup
     total_words_in_class = {}
+    for x in range(1,21):
+        total_words_in_class["class" + str(x)] = 0
 
-    #for x in range(12000):
-    #    total_words_in_class["class" + str()]
+    for x in range(12000):
+        current_class = classifications.data[x]
+        total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
-
-
-    print(row_sums)
-    print(len(row_sums))
-
-    # Flattenning the list of lists and removing the
-    #for list_element in row_sums:
-
-
-    #for x in range(12000):
-    #    print(columns[x][0])
-
-    #print("data")
-    #print(data)
-    return ""
+    print(total_words_in_class)
+    return total_words_in_class
 
 
 # return a dictionary of the prior probabilities for ["class_k"]
@@ -114,9 +94,8 @@ def determine_prior_probabilities(classifications):
     print(classifications.data)
 
     # initialize class counts for dictionary
-    for label in classifications.data:
-        class_counts["class" + str(label)] = 0
-        prior_probabilities["class" + str(label)] = 0
+    for i in range(1, 21):
+        class_counts["class" + str(i)] = 0
 
     # add 1 for every label you encounter (1 instance)
     for label in classifications.data:
