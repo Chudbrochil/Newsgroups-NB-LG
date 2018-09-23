@@ -1,6 +1,7 @@
 import pandas as pd
 import scipy.sparse
 import numpy as np
+import math
 import time
 
 # indexing into sparse matrix:
@@ -114,6 +115,8 @@ def determine_prior_probabilities(classifications):
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 def determine_likelihoods(data, non_zero_data, total_words_in_class):
+    # num of features + 1
+    laplace_denom = 61190
 
     # Calculating row constants for initializing our 2D likelihood matrix.
     # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
@@ -125,7 +128,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     # TODO: Verify that 61190 is our number for laplace smoothing
     initial_values = []
     for key, value in total_words_in_class.items():
-        initial_value = 1.0 / (61190 * int(value))
+        initial_value = 1.0 / (laplace_denom * int(value))
         initial_values.append(initial_value)
 
     #print(initial_values)
@@ -138,27 +141,33 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         for y in range(61189):
             likelihood_matrix[x][y] = initial_values[x]
 
-    #print(likelihood_matrix)
+    length_of_nonzero_data = len(non_zero_data[0])
+    # saving current row saves us ~1.5m hits for the entire data
+    current_row_index = -1
+    for i in range(length_of_nonzero_data):
+
+        # getting coordinates of nonzero ele
+        row_index = non_zero_data[0][i]
+        col_index = non_zero_data[1][i]
+
+        #if we're dealing with a new row
+        if(row_index != current_row_index):
+            current_classification = data[row_index, :-1]
+            current_row_index = row_index
+
+        current_val = data[row_index, col_index]
+
+        print(current_classification)
+        print(col_index)
+        
+        current_likelihood = likelihood_matrix[current_classification][col_index]
+        current_likelihood += (current_val / laplace_denom)
+
+        likelihood_matrix[current_classification][col_index] = math.log(current_likelihood)
+        print("Current likelihood: " + str(current_likelihood))
+        print("Log like: " + str(math.log(current_likelihood)))
 
 
-    likelihood_probabilities = np.zeros((data.get_shape()[0], data.get_shape()[1]))
-    print("Shape of likelihood matrix: " + str(likelihood_probabilities.shape))
-    rows_nonzero = non_zero_data[0]
-    cols_nonzero = non_zero_data[1]
-    print("shape of rows_nonzero" + str(rows_nonzero.shape))
-    print("Total nonzero examples: " + str(len(rows_nonzero)))
-
-    # for each classifcation
-    for label in classes:
-        # for each feature
-        for col in cols_nonzero:
-            # add up words for every example
-            for row in rows_nonzero:
-                """ Calclate total words in current col with label """
-                # if (data[row, :-1]) == label
-                # temp_total += data[row, col]
-            # temp_probability /= total_words_in_class[label]
-            # likelihood_probabilities[label, col] = temp_probability
 
     return ""
 
