@@ -32,21 +32,22 @@ def main():
     non_zero_data = data.nonzero()
     print(non_zero_data)
 
-    """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
-    start = time.time()
-    # loop through every nonzero element
-    for i in range(len(non_zero_data[0])):
-        row_ele = non_zero_data[0][i]
-        col_ele = non_zero_data[1][i]
-        ran = data[row_ele, col_ele]
-        # print("Row: " + str(row_ele) + " col: " + str(col_ele) + " Value: " + str(data[row_ele, col_ele]))
-
-    end = time.time()
-    total_time = end - start
-    print(total_time)
-    """  --------------------------------------------  """
+    # """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
+    # start = time.time()
+    # # loop through every nonzero element
+    # for i in range(len(non_zero_data[0])):
+    #     row_ele = non_zero_data[0][i]
+    #     col_ele = non_zero_data[1][i]
+    #     ran = data[row_ele, col_ele]
+    #     # print("Row: " + str(row_ele) + " col: " + str(col_ele) + " Value: " + str(data[row_ele, col_ele]))
+    #
+    # end = time.time()
+    # total_time = end - start
+    # print(total_time)
+    # """  --------------------------------------------  """
 
     #TODO load in file and get list of classifications... (can just hard code 0:20)
+    classes = load_classes("newsgrouplabels.txt")
     #classifcation_file = ...
 
     #calculate total words in each class
@@ -54,16 +55,42 @@ def main():
     total_words_in_class = determine_total_words_in_classes(data, non_zero_data, classes)
 
     # pass only the column of classifications
-    prior_probabilities= determine_prior_probabilities(data[:, -1:])
+    #prior_probabilities= determine_prior_probabilities(data[:, -1:])
 
     # pass the dataset except the classifications
-    likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
+    #likelihood_probabilities = determine_likelihoods(data, non_zero_data, classes, total_words_in_class)
 
 
 
 
 # for every class, count the total amount of words in that class
 def determine_total_words_in_classes(data, non_zero_data, classes):
+
+    # We don't want the class counts to interfere with data counts
+    data = data[:,0:-1]
+
+    # Get the sum of each row, this returns a column vector
+    row_sums = data.sum(axis=1)
+
+    total_words_in_class = {}
+
+    #for x in range(12000):
+    #    total_words_in_class["class" + str()]
+
+
+
+    print(row_sums)
+    print(len(row_sums))
+
+    # Flattenning the list of lists and removing the
+    #for list_element in row_sums:
+
+
+    #for x in range(12000):
+    #    print(columns[x][0])
+
+    #print("data")
+    #print(data)
     return ""
 
 
@@ -104,6 +131,19 @@ def determine_likelihoods(data, non_zero_data, classes, total_words_in_class):
     return ""
 
 
+# Loads the file that has the newsgroup classifications in it and returns
+# the classifications as a list.
+def load_classes(file_name):
+    file = open(file_name, "r")
+
+    classes = []
+
+    for line in file:
+        line = line.strip()
+        split_line = line.split(" ")
+        classes.append(split_line[1])
+
+    return classes
 
 
 if __name__ == "__main__":
