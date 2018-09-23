@@ -24,7 +24,7 @@ def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
     print("Shape of matrix: " + str(data.shape))
-    print("Value at (row 0, col 12): " + str(data[0, 12]))
+    print("Value at (row 0, col 12): " + str(data[0, 11]))
     print("Value that is a 0: " + str(data[0, 1]))
     print("Entire data shape: " + str(data.get_shape()))
 
@@ -32,7 +32,11 @@ def main():
     non_zero_data = data.nonzero()
     print(non_zero_data)
 
+<<<<<<< HEAD
     # """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
+=======
+    """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
+>>>>>>> 2cf7178a33d21211c1ee6647ec0b4092073c630f
     # start = time.time()
     # # loop through every nonzero element
     # for i in range(len(non_zero_data[0])):
@@ -44,7 +48,11 @@ def main():
     # end = time.time()
     # total_time = end - start
     # print(total_time)
+<<<<<<< HEAD
     # """  --------------------------------------------  """
+=======
+    """  --------------------------------------------  """
+>>>>>>> 2cf7178a33d21211c1ee6647ec0b4092073c630f
 
     #TODO load in file and get list of classifications... (can just hard code 0:20)
     classes = load_classes("newsgrouplabels.txt")
@@ -94,13 +102,32 @@ def determine_total_words_in_classes(data, non_zero_data, classes):
     return ""
 
 
-
-# return a list of probabilities corresponding to that classification
-# [0.1, 0.05, ..., 0.8]
-# [1,   2,  ...  , 14]
+# return a dictionary of the prior probabilities for ["class_k"]
 # calculate P(Y) -> # of examples labeled with class k / total examples
-def determine_prior_probabilities(classifictions):
-    return ""
+
+# TODO: possibly change hard coded iteration
+def determine_prior_probabilities(classifications):
+
+    class_counts = {}
+    prior_probabilities = {}
+
+    print(classifications.data)
+
+    # initialize class counts for dictionary
+    for label in classifications.data:
+        class_counts["class" + str(label)] = 0
+        prior_probabilities["class" + str(label)] = 0
+
+    # add 1 for every label you encounter (1 instance)
+    for label in classifications.data:
+        class_counts["class" + str(label)] += 1
+
+    # calculate the prior probabilities by dividing each class count by the total examples
+    for i in range(1, 21):
+        prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
+        print("Prior probability for class " + str(i) + " " + str(prior_probabilities["class" + str(i)]))
+
+    return prior_probabilities
 
 
 
