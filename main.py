@@ -53,8 +53,7 @@ def determine_total_words_in_classes(data):
 
     # We don't want the class counts to interfere with data counts
     classifications = data[:,-1:]
-    data_without_classes = copy.deepcopy(data)
-    data_without_classes = data_without_classes[:,0:-1]
+    data_without_classes = data[:,0:-1]
 
     # Get the sum of each row, this returns a column vector
     row_sums = data_without_classes.sum(axis=1)
@@ -68,7 +67,6 @@ def determine_total_words_in_classes(data):
         current_class = classifications.data[x]
         total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
-    #print(total_words_in_class)
     return total_words_in_class
 
 
@@ -92,7 +90,6 @@ def determine_prior_probabilities(classifications):
     # calculate the prior probabilities by dividing each class count by the total examples
     for i in range(1, 21):
         prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
-        #print("Prior probability for class " + str(i) + " " + str(prior_probabilities["class" + str(i)]))
 
     return prior_probabilities
 
