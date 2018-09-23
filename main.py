@@ -61,7 +61,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
     # for every example
     for w in range(5):
-        print("On example: %d\n\n" % w)
+        print("On example: %d" % w)
         # test every possible classification
         for i in range(20):
             log_prior = math.log(prior_probabilities["class" + str(i+1)])
@@ -69,8 +69,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
             for j in range(61189):
                 # count for current feature for current example
                 current_count = data[w, j]
-                #print(current_count)
-
+                
                 # log likelihood for current class and feature
                 log_of_likelihood = math.log(likelihood_probabilities[i][j])
 
@@ -87,12 +86,12 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
         probabilities_for_classes = []
 
     list_of_predictions = []
-    current_highest_probability = 0
+    current_highest_probability = -1000000.0 #-math.inf
 
     for example in probabilities_for_each_example:
         prediction = -1
+        print(example)
         for i in range(0, 20):
-            print(example[i])
             if(example[i] > current_highest_probability):
                 prediction = i+1
                 current_highest_probability = example[i]
@@ -152,7 +151,7 @@ def determine_prior_probabilities(classifications):
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
-    likelihood_matrix = initialize_likelihood_matrix(total_words_in_class)
+    likelihood_matrix = np.zeros((20, 61189))
     length_of_nonzero_data = len(non_zero_data[0])
 
     # saving current row saves us ~1.5m hits for the entire data
@@ -171,39 +170,20 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         current_val = data[row_index, col_index]
 
         # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
-        current_likelihood = likelihood_matrix[current_classification - 1][col_index]
-        current_likelihood += (current_val / total_words_in_class["class" + str(current_classification)])
+        likelihood_matrix[current_classification - 1][col_index] += current_val
 
-        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
-        likelihood_matrix[current_classification - 1][col_index] = current_likelihood
+    # Now that we have looped over all the non-zero data, we need to add laplace
+    # (1/61189) and divide it all by "total all words in Yk + 1"
+    for x in range(20):
+        total_words = total_words_in_class["class" + str(x + 1)]
+        for y in range(61189):
+            enhanced_likelihood = likelihood_matrix[x][y]
+            enhanced_likelihood += (1 / 61189)
+            enhanced_likelihood /= (total_words + 1)
+            likelihood_matrix[x][y] = enhanced_likelihood
 
 
     print(np.sum(likelihood_matrix, axis=0))
-    return likelihood_matrix
-
-
-def initialize_likelihood_matrix(total_words_in_class):
-    # TODO: Re-write this comment a bit more concisely (Anthony)
-    # Calculating row constants for initializing our 2D likelihood matrix.
-    # Since our formula is P(X|Y) = ()(Count of X in Y) + 1/61190) / ()(words in Y) + 1)
-    # We can split this up to say:
-    # (((Count of X in Y) + 1/61190) / (Words in Y + 1)) +
-    # ((1/61190) / (Words in Y + 1))
-    # We are initializing our values to the second term...
-    # ((1/61190) / (Words in Y + 1))
-    # TODO: Verify that 61190 is our number for laplace smoothing
-    initial_values = []
-    for key, value in total_words_in_class.items():
-        initial_value = 1.0 / (61190 * int(value))
-        initial_values.append(initial_value)
-
-    # Initializing our matrix with the second term, we will add the first term
-    # to these values in our "count of Xi in Yk" calculation.
-    likelihood_matrix = np.zeros((20, 61189))
-    for x in range(20):
-        for y in range(61189):
-            likelihood_matrix[x][y] = initial_values[x]
-
     return likelihood_matrix
 
 
