@@ -3,6 +3,7 @@ import scipy.sparse
 import numpy as np
 import math
 import time
+import copy
 
 # indexing into sparse matrix:
 # https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
@@ -24,14 +25,9 @@ import time
 def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("sparse_matrix_convert.npz")
-    print("Shape of matrix: " + str(data.shape))
-    print("Value at (row 0, col 12): " + str(data[0, 11]))
-    print("Value that is a 0: " + str(data[0, 1]))
-    print("Entire data shape: " + str(data.get_shape()))
 
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
-    print(non_zero_data)
 
     # """ EXAMPLE OF RUNNING THROUGH ENTIRE MATIRX, O(n) """
     # start = time.time()
@@ -66,10 +62,11 @@ def determine_total_words_in_classes(data):
 
     # We don't want the class counts to interfere with data counts
     classifications = data[:,-1:]
-    data = data[:,0:-1]
+    data_without_classes = copy.deepcopy(data)
+    data_without_classes = data_without_classes[:,0:-1]
 
     # Get the sum of each row, this returns a column vector
-    row_sums = data.sum(axis=1)
+    row_sums = data_without_classes.sum(axis=1)
 
     # Initializing 20 dictionary elements for each newsgroup
     total_words_in_class = {}
@@ -92,8 +89,6 @@ def determine_prior_probabilities(classifications):
 
     class_counts = {}
     prior_probabilities = {}
-
-    print(classifications.data)
 
     # initialize class counts for dictionary
     for i in range(1, 21):
@@ -146,6 +141,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     current_row_index = -1
     for i in range(length_of_nonzero_data):
 
+        print(non_zero_data)
+
         # getting coordinates of nonzero ele
         row_index = non_zero_data[0][i]
         col_index = non_zero_data[1][i]
@@ -159,7 +156,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
         print(current_classification)
         print(col_index)
-        
+
         current_likelihood = likelihood_matrix[current_classification][col_index]
         current_likelihood += (current_val / laplace_denom)
 
