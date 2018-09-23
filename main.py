@@ -46,6 +46,54 @@ def np_train(data):
     # pass the dataset except the classifications
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
 
+    classify_training_data_test(data[:5, :], prior_probabilities, likelihood_probabilities)
+
+
+def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
+
+    print("Starting classification...")
+    probabilities_for_each_example = []
+    probabilities_for_classes = []
+
+    # calculate function for each classification
+    sum_weighted_counts_likelihood = 0
+
+    # for every example
+    for w in range(5):
+        # test every possible classification
+        for i in range(1, 21):
+            log_prior = math.log(prior_probabilities["class" + str(i)])
+            # go through every feature
+            for j in range(61189):
+                # count for current feature for current example
+                current_count = data[w, j]
+                print(current_count)
+
+                # log likelihood for current class and feature
+                log_of_likelihood = math.log(likelihood_probabilities[i][j])
+
+                multiplied_count_likelihood = current_count * log_of_likelihood
+
+                sum_weighted_counts_likelihood += multiplied_count_likelihood
+
+            probability_for_current_class = log_prior + sum_weighted_counts_likelihood
+            sum_weighted_counts_likelihood = 0
+
+            probabilities_for_classes.append(probability_for_current_class)
+
+        probabilities_for_each_example.append(probabilities_for_classes)
+        probabilities_for_classes = []
+
+    list_of_predictions = []
+    current_highest_probability = 0
+
+    for example in probabilities_for_classes:
+        for i in range(0, 20):
+            if(example[i] > current_highest_probability):
+                prediction = i+1
+                current_highest_probability = example[i]
+
+    print(list_of_predictions)
 
 
 # for every class, count the total amount of words in that class
