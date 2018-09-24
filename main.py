@@ -52,17 +52,18 @@ def np_train(data):
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    list_of_predictions = classify_training_data_test(test_data[:, :], prior_probabilities, likelihood_probabilities)
-    output_predictions("output.csv", list_of_predictions, 12001)
+    predictions = classify_training_data_test(test_data[:2, :], prior_probabilities, likelihood_probabilities)
+    output_predictions("output.csv", predictions, 12001)
 
 
-def output_predictions(file_name, list_of_predictions, starting_num):
+def output_predictions(file_name, predictions, starting_num):
 
     output_file = open(file_name, "w")
 
     i = 0
-    for prediction in list_of_predictions:
-        output_file.write("%d,%d\n" % (starting_num + i, int(prediction)))
+    for prediction in predictions:
+        index = starting_num + i
+        output_file.write("%d,%d\n" % (index, int(predictions[i])))
         i += 1
 
     output_file.close()
@@ -70,9 +71,6 @@ def output_predictions(file_name, list_of_predictions, starting_num):
 
 # y_prediction function
 def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
-
-    probabilities_for_each_example = []
-    probabilities_for_classes = []
 
     # calculate function for each classification
     sum_weighted_counts_likelihood = 0
@@ -84,13 +82,17 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
     print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
 
+    predictions = {}
 
     # for every example
     for w in range(length_of_examples):
         print("On example: %d" % w)
+        probabilities_for_classes = []
+
         # test every possible classification
         for i in range(20):
             log_prior = math.log(prior_probabilities["class" + str(i)])
+
             # go through every feature
             for j in range(length_of_features):
                 # count for current feature for current example
@@ -108,20 +110,17 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
             probabilities_for_classes.append(probability_for_current_class)
 
-        probabilities_for_each_example.append(probabilities_for_classes)
-        probabilities_for_classes = []
+        example_prediction = max(enumerate(probabilities_for_classes), key=operator.itemgetter(1))[0] + 1 # NOTE: Since the classes are 1-indexed.
 
-    list_of_predictions = []
-
-    for example in probabilities_for_each_example:
-        # https://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list#
-        max_index = max(enumerate(example), key=operator.itemgetter(1))[0]
-        list_of_predictions.append((max_index + 1)) # NOTE: Since the classes are 1-indexed.
+        predictions[w] = example_prediction
 
 
-    print("List of predictions:")
-    print(list_of_predictions)
-    return list_of_predictions
+    print("Dictionary of predictions")
+    print(predictions)
+    return predictions
+
+
+#def classify():
 
 
 # for every class, count the total amount of words in that class
