@@ -7,6 +7,7 @@ import math
 import time
 import copy
 import operator
+from sklearn.model_selection import train_test_split
 
 # indexing into sparse matrix:
 # https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
@@ -29,10 +30,28 @@ num_of_classes = 20
 def main():
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("training_sparse.npz")
+    # Loading the testing data, getting our predictions, and then outputting them.
+    test_data = scipy.sparse.load_npz("testing_sparse.npz")
+
+    # can set shuffle to True, will still work
+    X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
+    X_validation_classification = X_validation[:, -1:]
+
+    print("Training set size: " + str(X_train.shape))
+    print("Validation set size: " + str(X_validation.shape))
 
     # Training naive bayes
-    nb_train(data)
+    likelihood_probabilities, prior_probabilities = nb_train(X_train)
+    predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
+    accuracy = 0
+    for i in range(X_validation.shape[0]):
+        if(predictions[i] == X_validation_classification[i]):
+            accuracy += 1
+    accuracy /= X_validation.shape[0]
+    print("Accuracy on validation set: " + str(accuracy))
+
+    output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
 def nb_train(data):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
@@ -53,11 +72,7 @@ def nb_train(data):
     # Making sure we can classify our training data correctly.
     #classify_data(data[:1, :-1], prior_probabilities, likelihood_probabilities)
 
-    # Loading the testing data, getting our predictions, and then outputting them.
-    test_data = scipy.sparse.load_npz("testing_sparse.npz")
-
-    predictions = nb_predict(data[:10, :-1], prior_probabilities, likelihood_probabilities)
-    output_predictions("output.csv", predictions, 12001)
+    return likelihood_probabilities, prior_probabilities
 
 
 # output_predictions()
@@ -97,7 +112,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
     length_of_nonzero_test_data = len(nonzero_test_data[0])
 
     predictions = {}
-    current_row_test_index = -1
+    current_nonzero_row_index = -1
     prev_row_index = -1
     starting_value_for_nonzero_indexing = 0
 
@@ -106,11 +121,11 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
         current_nonzero_row_index = nonzero_test_data[0][row]
 
         # if we're dealing with a new example, we will calculate a prediction,
-        # otherwise we will continue until we get to a new prediction. This gives us a way
-        # to check our indexing for the tuples of indexing. We should always match the two.
+        # otherwise we will continue until we get to a new row. This gives us a way
+        # to check our indexing for the tuples of indexing. We should always match the current_nonzero_row_index and current_row below.
         if(prev_row_index != current_nonzero_row_index):
 
-            print("On example: %d" % current_nonzero_row_index)
+            #print("On example: %d" % current_nonzero_row_index)
             highest_prob = -math.inf
             highest_prob_index = -1
 
@@ -148,8 +163,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
                     current_count = data[current_row, current_col]
                     # get the likelihood of current class for current column
                     log_of_likelihood = math.log(likelihood_probabilities[k][current_col])
-                    multiplied_count_likelihood = current_count * log_of_likelihood
-                    sum_weighted_counts_likelihood += multiplied_count_likelihood
+                    weighted_likelihood = current_count * log_of_likelihood
+                    sum_weighted_counts_likelihood += weighted_likelihood
 
                     # increment the total amount of features processed in this row ()
                     num_of_items_in_current_row += 1
@@ -169,8 +184,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
             starting_value_for_nonzero_indexing += num_of_items_in_current_row
             # print(starting_value_for_nonzero_indexing)
 
-    print("Dictionary of predictions")
-    print(predictions)
+    #print("Dictionary of predictions")
+    #print(predictions)
     end_time = time.time()
     print("Total time: " + str(end_time - start_time))
     return predictions
@@ -181,6 +196,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
 # This is useful in likelihood calculation in denominator.
 def determine_total_words_in_classes(data):
 
+    total_examples = data.shape[0]
     # We don't want the class counts to interfere with data counts
     classifications = data[:,-1:]
     data_without_classes = data[:,0:-1]
@@ -193,7 +209,7 @@ def determine_total_words_in_classes(data):
     for x in range(num_of_classes):
         total_words_in_class["class" + str(x)] = 0
 
-    for x in range(12000):
+    for x in range(total_examples):
         current_class = (classifications.data[x] - 1) # NOTE: The classifications are 1-index'ed. This is "the fix"
         total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
