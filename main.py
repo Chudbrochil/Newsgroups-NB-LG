@@ -31,10 +31,10 @@ def main():
     data = scipy.sparse.load_npz("training_sparse.npz")
 
     # Training naive bayes
-    np_train(data)
+    nb_train(data)
 
 
-def np_train(data):
+def nb_train(data):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
@@ -55,7 +55,7 @@ def np_train(data):
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    predictions = classify_data(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
+    predictions = nb_predict(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
     output_predictions("output.csv", predictions, 12001)
 
 
@@ -76,86 +76,82 @@ def output_predictions(file_name, predictions, starting_num):
     output_file.close()
 
 
-# classify_data()
+# nb_predict()
+# Calculates the prediction function for Naive Bayes
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
-def classify_data(data, prior_probabilities, likelihood_probabilities):
-
-    start_time = time.time()
-
+def nb_predict(data, prior_probabilities, likelihood_probabilities):
     # Getting the length of the features, we should be passing in the data without
     # classifications. This should be equal to 61188
     length_of_features = data.shape[1]
     length_of_examples = data.shape[0]
+
+    start_time = time.time()
 
     #gives a tuple of rows and columns of nonzero data
     nonzero_test_data = data.nonzero()
 
     print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
 
-    predictions = {}
-
     length_of_nonzero_test_data = len(nonzero_test_data[0])
 
+    predictions = {}
     current_row_test_index = -1
-    last_row_index = -1
-    num_of_iterations_done = 0
+    prev_row_index = -1
     new_starting_value_for_nonzero_matrix = 0
 
     # for every example (w is an index, but we're going to treat it like we're looping through every row at a time in data)
-    for w in range(length_of_nonzero_test_data):
+    for row in range(length_of_nonzero_test_data):
+        current_nonzero_row_index = nonzero_test_data[0][row]
 
-        # if we're dealing with a new example, we will calculate prediction,
-        # otherwise we will continue until we get to a new prediction
-        if(last_row_index != nonzero_test_data[0][w]):
+        # if we're dealing with a new example, we will calculate a prediction,
+        # otherwise we will continue until we get to a new prediction. This gives us a way
+        # to check our indexing for the tuples of indexing. We should always match the two.
+        if(prev_row_index != current_nonzero_row_index):
 
-            print("On example: %d" % nonzero_test_data[0][w])
+            print("On example: %d" % current_nonzero_row_index)
             highest_prob = -math.inf
             highest_prob_index = -1
 
             # update last row index to the new row we're on
-            last_row_index = nonzero_test_data[0][w]
+            prev_row_index = current_nonzero_row_index
 
-            # test every possible classification for the current example
-            for i in range(20):
-                # the number of entries to the next row
-                num_of_iterations_done = 0
+            # test every possible classification for the current example (row)
+            for k in range(20):
+                # the number of entries in the current row (we will skip this amount to start at the next row)
+                num_of_items_in_current_row = 0
+                # summation variable in y_prediction function
                 sum_weighted_counts_likelihood = 0
 
-                log_prior = math.log(prior_probabilities["class" + str(i)])
+                log_prior = math.log(prior_probabilities["class" + str(k)])
 
-                # loop through every feature
-                for j in range(length_of_nonzero_test_data):
-
-                    # get the index of the current row on every iteration
-                    # we need to add the new starting value because the previous iteration went through all
-                    # of the features for the previous example. Adding the new starting value
-                    # will make sure we're starting at the new rows index for the nonzero_test_data
+                # loop through every nonzero feature (can skip 0 features because it would just add 0)
+                for i in range(length_of_nonzero_test_data):
 
                     #TODO why do I have to catch this error? Investigate new_starting_value_for_nonzero_matrix
-                    if j + new_starting_value_for_nonzero_matrix >= length_of_nonzero_test_data:
+                    if((i + new_starting_value_for_nonzero_matrix) >= length_of_nonzero_test_data):
                         print("Catching possible index out of bounds exception")
                         break
 
-                    current_row = nonzero_test_data[0][j + new_starting_value_for_nonzero_matrix]
+                    # have to add new starting value because we are not remove elements that we've
+                    # already visited in the tuple of nonzero indices
+                    current_row = nonzero_test_data[0][i + new_starting_value_for_nonzero_matrix]
 
                     # if we're not on the same example, we need to break, go to next class,
-                    # and start back from where we started
-                    if current_row != nonzero_test_data[0][w]:
+                    # and repeat the same iterations but for the new class
+                    if current_row != current_nonzero_row_index:
                         break
 
-                    current_col = nonzero_test_data[1][j + new_starting_value_for_nonzero_matrix]
-
+                    current_col = nonzero_test_data[1][i + new_starting_value_for_nonzero_matrix]
+                    # weight of this feature in the new dataset
                     current_count = data[current_row, current_col]
-                    # get the log of the likelihood for this column with class i
-                    log_of_likelihood = math.log(likelihood_probabilities[i][current_col])
-
+                    # get the likelihood of current class for current column
+                    log_of_likelihood = math.log(likelihood_probabilities[k][current_col])
                     multiplied_count_likelihood = current_count * log_of_likelihood
-
                     sum_weighted_counts_likelihood += multiplied_count_likelihood
 
-                    # increment the total amount of features we've done
-                    num_of_iterations_done += 1
+                    # increment the total amount of features processed in this row ()
+                    num_of_items_in_current_row += 1
 
                 probability_for_current_class = log_prior + sum_weighted_counts_likelihood
 
@@ -164,11 +160,12 @@ def classify_data(data, prior_probabilities, likelihood_probabilities):
                     highest_prob = probability_for_current_class
                     highest_prob_index = i
 
-            #print("Num of iterations done: " + str(num_of_iterations_done))
-            predictions[nonzero_test_data[0][w]] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
+            #print("Num of iterations done: " + str(num_of_items_in_current_row))
+            predictions[current_nonzero_row_index] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
 
-            # after every classification has been through, we need to update the starting point for the nonzero_data
-            new_starting_value_for_nonzero_matrix += num_of_iterations_done
+            # after every classification has been processed, we need to update the starting point
+            # to the next row of nonzero data
+            new_starting_value_for_nonzero_matrix += num_of_items_in_current_row
 
     print("Dictionary of predictions")
     end_time = time.time()
