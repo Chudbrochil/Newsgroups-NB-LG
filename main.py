@@ -55,7 +55,7 @@ def np_train(data):
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    predictions = classify_training_data_test(data[:10, :-1], prior_probabilities, likelihood_probabilities)
+    predictions = classify_training_data_test(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
     output_predictions("output.csv", predictions, 12001)
 
 
@@ -64,6 +64,8 @@ def np_train(data):
 def output_predictions(file_name, predictions, starting_num):
 
     output_file = open(file_name, "w")
+
+    output_file.write("id,class\n")
 
     i = 0
     for prediction in predictions:
@@ -164,7 +166,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
             #print("Num of iterations done: " + str(num_of_iterations_done))
             predictions[nonzero_test_data[0][w]] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
-            print(predictions)
+            #print(predictions)
 
             # after every classification has been through, we need to update the starting point for the nonzero_data
             new_starting_value_for_nonzero_matrix += num_of_iterations_done
@@ -211,7 +213,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     """
 
     print("Dictionary of predictions")
-    print(predictions)
+    #print(predictions)
     end_time = time.time()
     print("Total time: " + str(end_time - start_time))
     return predictions
@@ -297,8 +299,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += (1.0 / 61188)
-            enhanced_likelihood /= (total_words + 1)
+            enhanced_likelihood += 1.0 / 1000 #(1.0 / 61188)
+            enhanced_likelihood /= (total_words + 61188 / 1000)#(total_words + 1)
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
