@@ -129,6 +129,12 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                     # we need to add the new starting value because the previous iteration went through all
                     # of the features for the previous example. Adding the new starting value
                     # will make sure we're starting at the new rows index for the nonzero_test_data
+
+                    #TODO why do I have to catch this error? Investigate new_starting_value_for_nonzero_matrix
+                    if j + new_starting_value_for_nonzero_matrix >= length_of_nonzero_test_data:
+                        print("Catching possible index out of bounds exception")
+                        break
+
                     current_row = nonzero_test_data[0][j + new_starting_value_for_nonzero_matrix]
 
                     # if we're not on the same example, we need to break, go to next class,
@@ -157,7 +163,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                     highest_prob_index = i
 
             #print("Num of iterations done: " + str(num_of_iterations_done))
-            predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
+            predictions[nonzero_test_data[0][w]] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
             print(predictions)
 
             # after every classification has been through, we need to update the starting point for the nonzero_data
