@@ -102,9 +102,11 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
     # for every example (w is an index, but we're going to treat it like we're looping through every row at a time in data)
     for w in range(length_of_nonzero_test_data):
+
         # if we're dealing with a new example, we will calculate prediction,
         # otherwise we will continue until we get to a new prediction
         if(last_row_index != nonzero_test_data[0][w]):
+
             print("On example: %d" % nonzero_test_data[0][w])
             highest_prob = -math.inf
             highest_prob_index = -1
@@ -114,7 +116,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
             # test every possible classification for the current example
             for i in range(20):
-                # this can be set to 0 every iteration because the count is the same for every class iteration (it's the same for each)
+                # the number of entries to the next row
                 num_of_iterations_done = 0
                 sum_weighted_counts_likelihood = 0
 
@@ -129,14 +131,15 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                     # will make sure we're starting at the new rows index for the nonzero_test_data
                     current_row = nonzero_test_data[0][j + new_starting_value_for_nonzero_matrix]
 
-                    #if we're not on the same example, we need to break out and go to a new class
-                    if current_row != w:
+                    # if we're not on the same example, we need to break, go to next class,
+                    # and start back from where we started
+                    if current_row != nonzero_test_data[0][w]:
                         break
 
                     current_col = nonzero_test_data[1][j + new_starting_value_for_nonzero_matrix]
 
                     current_count = data[current_row, current_col]
-                    # take the log of the likelihood for this nonzero data value
+                    # get the log of the likelihood for this column with class i
                     log_of_likelihood = math.log(likelihood_probabilities[i][current_col])
 
                     multiplied_count_likelihood = current_count * log_of_likelihood
@@ -153,17 +156,17 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                     highest_prob = probability_for_current_class
                     highest_prob_index = i
 
+            #print("Num of iterations done: " + str(num_of_iterations_done))
             predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
+            print(predictions)
 
             # after every classification has been through, we need to update the starting point for the nonzero_data
             new_starting_value_for_nonzero_matrix += num_of_iterations_done
+            #print("New starting value: " + str(new_starting_value_for_nonzero_matrix))
 
-            # calculate probabilty for current example
         #continue until we deal with a new example (row)
         else:
             continue
-            # we need to go to start calculating new stuff
-
 
     """ Old slow code
     # for every example
