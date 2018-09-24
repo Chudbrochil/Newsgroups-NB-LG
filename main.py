@@ -153,11 +153,10 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                     highest_prob = probability_for_current_class
                     highest_prob_index = i
 
-                predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
+            predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
 
             # after every classification has been through, we need to update the starting point for the nonzero_data
             new_starting_value_for_nonzero_matrix += num_of_iterations_done
-            num_of_iterations_done = 0
 
             # calculate probabilty for current example
         #continue until we deal with a new example (row)
@@ -205,7 +204,7 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     print("Dictionary of predictions")
     print(predictions)
     end_time = time.time()
-    print(end_time - start_time)
+    print("Total time: " + str(end_time - start_time))
     return predictions
 
 
