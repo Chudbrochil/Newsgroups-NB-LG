@@ -72,9 +72,6 @@ def output_predictions(file_name, predictions, starting_num):
 # y_prediction function
 def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
 
-    # calculate function for each classification
-    sum_weighted_counts_likelihood = 0
-
     # Getting the length of the features, we should be passing in the data without
     # classifications. This should be equal to 61188
     length_of_features = data.shape[1]
@@ -93,6 +90,9 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
         # test every possible classification
         for i in range(20):
             log_prior = math.log(prior_probabilities["class" + str(i)])
+
+            # calculate function for each classification
+            sum_weighted_counts_likelihood = 0
 
             # go through every feature
             for j in range(length_of_features):
