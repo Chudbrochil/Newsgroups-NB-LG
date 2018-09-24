@@ -51,11 +51,11 @@ def np_train(data):
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
 
     # Making sure we can classify our training data correctly.
-    #classify_training_data_test(data[:1, :-1], prior_probabilities, likelihood_probabilities)
+    #classify_data(data[:1, :-1], prior_probabilities, likelihood_probabilities)
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    predictions = classify_training_data_test(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
+    predictions = classify_data(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
     output_predictions("output.csv", predictions, 12001)
 
 
@@ -76,10 +76,10 @@ def output_predictions(file_name, predictions, starting_num):
     output_file.close()
 
 
-# classify_training_data_set() TODO: Should we rename this?
+# classify_data()
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
-def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
+def classify_data(data, prior_probabilities, likelihood_probabilities):
 
     start_time = time.time()
 
@@ -166,54 +166,11 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
             #print("Num of iterations done: " + str(num_of_iterations_done))
             predictions[nonzero_test_data[0][w]] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
-            #print(predictions)
 
             # after every classification has been through, we need to update the starting point for the nonzero_data
             new_starting_value_for_nonzero_matrix += num_of_iterations_done
-            #print("New starting value: " + str(new_starting_value_for_nonzero_matrix))
-
-        #continue until we deal with a new example (row)
-        else:
-            continue
-
-    """ Old slow code
-    # for every example
-    for w in range(length_of_examples):
-        print("On example: %d" % w)
-        highest_prob = -math.inf
-        highest_prob_index = -1
-
-        # test every possible classification
-        for i in range(20):
-            log_prior = math.log(prior_probabilities["class" + str(i)])
-
-            # calculate function for each classification
-            sum_weighted_counts_likelihood = 0
-
-            # go through every feature
-            for j in range(length_of_features):
-                # count for current feature for current example
-                current_count = data[w, j]
-
-                # log likelihood for current class and feature
-                log_of_likelihood = math.log(likelihood_probabilities[i][j])
-
-                multiplied_count_likelihood = current_count * log_of_likelihood
-
-                sum_weighted_counts_likelihood += multiplied_count_likelihood
-
-            probability_for_current_class = log_prior + sum_weighted_counts_likelihood
-
-            # Finding the class with highest probability prediction
-            if probability_for_current_class > highest_prob:
-                highest_prob = probability_for_current_class
-                highest_prob_index = i
-
-        predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
-    """
 
     print("Dictionary of predictions")
-    #print(predictions)
     end_time = time.time()
     print("Total time: " + str(end_time - start_time))
     return predictions
@@ -299,8 +256,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += 1.0 / 1000 #(1.0 / 61188)
-            enhanced_likelihood /= (total_words + 61188 / 1000)#(total_words + 1)
+            enhanced_likelihood += 1.0 / 100 #(1.0 / 61188)
+            enhanced_likelihood /= (total_words + 61188 / 100)#(total_words + 1)
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
