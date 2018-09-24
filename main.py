@@ -99,7 +99,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
     predictions = {}
     current_row_test_index = -1
     prev_row_index = -1
-    new_starting_value_for_nonzero_matrix = 0
+    starting_value_for_nonzero_indexing = 0
 
     # for every example (w is an index, but we're going to treat it like we're looping through every row at a time in data)
     for row in range(length_of_nonzero_test_data):
@@ -126,24 +126,24 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
 
                 log_prior = math.log(prior_probabilities["class" + str(k)])
 
-                # loop through every nonzero feature (can skip 0 features because it would just add 0)
-                for i in range(length_of_nonzero_test_data):
+                # loop through every nonzero feature (can skip words with nonzero counts because it would add 0)
+                for i in range(starting_value_for_nonzero_indexing, length_of_nonzero_test_data):
 
-                    #TODO why do I have to catch this error? Investigate new_starting_value_for_nonzero_matrix
-                    if((i + new_starting_value_for_nonzero_matrix) >= length_of_nonzero_test_data):
+                    #TODO why do I have to catch this error? Investigate starting_value_for_nonzero_indexing
+                    if(i >= length_of_nonzero_test_data):
                         print("Catching possible index out of bounds exception")
                         break
 
                     # have to add new starting value because we are not remove elements that we've
                     # already visited in the tuple of nonzero indices
-                    current_row = nonzero_test_data[0][i + new_starting_value_for_nonzero_matrix]
+                    current_row = nonzero_test_data[0][i]
 
                     # if we're not on the same example, we need to break, go to next class,
                     # and repeat the same iterations but for the new class
                     if current_row != current_nonzero_row_index:
                         break
 
-                    current_col = nonzero_test_data[1][i + new_starting_value_for_nonzero_matrix]
+                    current_col = nonzero_test_data[1][i]
                     # weight of this feature in the new dataset
                     current_count = data[current_row, current_col]
                     # get the likelihood of current class for current column
@@ -166,7 +166,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
 
             # after every classification has been processed, we need to update the starting point
             # to the next row of nonzero data
-            new_starting_value_for_nonzero_matrix += num_of_items_in_current_row
+            starting_value_for_nonzero_indexing += num_of_items_in_current_row
+            # print(starting_value_for_nonzero_indexing)
 
     print("Dictionary of predictions")
     print(predictions)
