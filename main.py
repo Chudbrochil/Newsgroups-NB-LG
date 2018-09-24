@@ -87,7 +87,8 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     # for every example
     for w in range(length_of_examples):
         print("On example: %d" % w)
-        probabilities_for_classes = []
+        highest_prob = -math.inf
+        highest_prob_index = -1
 
         # test every possible classification
         for i in range(20):
@@ -108,11 +109,12 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
             probability_for_current_class = log_prior + sum_weighted_counts_likelihood
             sum_weighted_counts_likelihood = 0
 
-            probabilities_for_classes.append(probability_for_current_class)
+            # Finding the class with highest probability prediction
+            if probability_for_current_class > highest_prob:
+                highest_prob = probability_for_current_class
+                highest_prob_index = i
 
-        example_prediction = max(enumerate(probabilities_for_classes), key=operator.itemgetter(1))[0] + 1 # NOTE: Since the classes are 1-indexed.
-
-        predictions[w] = example_prediction
+        predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
 
 
     print("Dictionary of predictions")
