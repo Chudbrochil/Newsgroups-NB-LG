@@ -53,8 +53,6 @@ def np_train(data):
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
     list_of_predictions = classify_training_data_test(test_data[:, :], prior_probabilities, likelihood_probabilities)
-
-
     output_predictions("output.csv", list_of_predictions, 12001)
 
 
@@ -96,7 +94,6 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
             # go through every feature
             for j in range(length_of_features):
                 # count for current feature for current example
-                #print("w: %d j: %d" % (w, j))
                 current_count = data[w, j]
 
                 # log likelihood for current class and feature
@@ -116,14 +113,13 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
     list_of_predictions = []
 
-
     for example in probabilities_for_each_example:
         # https://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list#
         max_index = max(enumerate(example), key=operator.itemgetter(1))[0]
         list_of_predictions.append((max_index + 1)) # NOTE: Since the classes are 1-indexed.
 
 
-    print("List of predictions:\n")
+    print("List of predictions:")
     print(list_of_predictions)
     return list_of_predictions
 
@@ -152,7 +148,6 @@ def determine_total_words_in_classes(data):
 
 # return a dictionary of the prior probabilities for ["class_k"]
 # calculate P(Y) -> # of examples labeled with class k / total examples
-
 # TODO: possibly change hard coded iteration
 def determine_prior_probabilities(classifications):
 
