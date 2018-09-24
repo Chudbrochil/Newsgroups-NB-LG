@@ -48,11 +48,13 @@ def np_train(data):
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
 
     # Making sure we can classify our training data correctly.
-    #classify_training_data_test(data[:5, :-1], prior_probabilities, likelihood_probabilities)
+    #classify_training_data_test(data[:1, :-1], prior_probabilities, likelihood_probabilities)
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    list_of_predictions = classify_training_data_test(test_data[:5, :], prior_probabilities, likelihood_probabilities)
+    list_of_predictions = classify_training_data_test(test_data[:, :], prior_probabilities, likelihood_probabilities)
+
+
     output_predictions("output.csv", list_of_predictions, 12001)
 
 
@@ -71,7 +73,6 @@ def output_predictions(file_name, list_of_predictions, starting_num):
 # y_prediction function
 def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
 
-    print("Starting classification...")
     probabilities_for_each_example = []
     probabilities_for_classes = []
 
@@ -81,13 +82,17 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     # Getting the length of the features, we should be passing in the data without
     # classifications. This should be equal to 61188
     length_of_features = data.shape[1]
+    length_of_examples = data.shape[0]
+
+    print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
+
 
     # for every example
-    for w in range(5):
+    for w in range(length_of_examples):
         print("On example: %d" % w)
         # test every possible classification
         for i in range(20):
-            log_prior = math.log(prior_probabilities["class" + str(i+1)])
+            log_prior = math.log(prior_probabilities["class" + str(i)])
             # go through every feature
             for j in range(length_of_features):
                 # count for current feature for current example
@@ -115,10 +120,11 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     for example in probabilities_for_each_example:
         # https://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list#
         max_index = max(enumerate(example), key=operator.itemgetter(1))[0]
-        list_of_predictions.append((max_index+1)) # Since the classes are 1-indexed.
+        list_of_predictions.append((max_index + 1)) # NOTE: Since the classes are 1-indexed.
 
+
+    print("List of predictions:\n")
     print(list_of_predictions)
-
     return list_of_predictions
 
 
@@ -134,11 +140,11 @@ def determine_total_words_in_classes(data):
 
     # Initializing 20 dictionary elements for each newsgroup
     total_words_in_class = {}
-    for x in range(1,21):
+    for x in range(20):
         total_words_in_class["class" + str(x)] = 0
 
     for x in range(12000):
-        current_class = classifications.data[x]
+        current_class = (classifications.data[x] - 1) # NOTE: The classifications are 1-index'ed. This is "the fix"
         total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
     return total_words_in_class
@@ -154,15 +160,15 @@ def determine_prior_probabilities(classifications):
     prior_probabilities = {}
 
     # initialize class counts for dictionary
-    for i in range(1, 21):
+    for i in range(20):
         class_counts["class" + str(i)] = 0
 
     # add 1 for every label you encounter (1 instance)
     for label in classifications.data:
-        class_counts["class" + str(label)] += 1
+        class_counts["class" + str(label - 1)] += 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
 
     # calculate the prior probabilities by dividing each class count by the total examples
-    for i in range(1, 21):
+    for i in range(20):
         prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
 
     return prior_probabilities
@@ -173,7 +179,7 @@ def determine_prior_probabilities(classifications):
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
-    likelihood_matrix = np.zeros((20, 61189))
+    likelihood_matrix = np.zeros((20, 61189)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
 
     # saving current row saves us ~1.5m hits for the entire data
@@ -186,18 +192,17 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
         #if we're dealing with a new row
         if(row_index != current_row_index):
-            current_classification = data[row_index, -1:].data[0]
+            current_classification = (data[row_index, -1:].data[0]) - 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
             current_row_index = row_index
 
         current_val = data[row_index, col_index]
 
-        # TODO: 0-index'ing vs 1-index'ing, hacky fix for now
-        likelihood_matrix[current_classification - 1][col_index] += current_val
+        likelihood_matrix[current_classification][col_index] += current_val
 
     # Now that we have looped over all the non-zero data, we need to add laplace
     # (1/61188) and divide it all by "total all words in Yk + 1"
     for x in range(20):
-        total_words = total_words_in_class["class" + str(x + 1)]
+        total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
             enhanced_likelihood += (1.0 / 61188)
