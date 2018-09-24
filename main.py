@@ -55,7 +55,7 @@ def np_train(data):
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    predictions = classify_training_data_test(data[:10, :-1], prior_probabilities, likelihood_probabilities)
+    predictions = classify_training_data_test(test_data[:10, :-1], prior_probabilities, likelihood_probabilities)
     output_predictions("output.csv", predictions, 12001)
 
 
@@ -94,8 +94,8 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     predictions = {}
 
     length_of_nonzero_test_data = len(nonzero_test_data[0])
-    current_row_test_index = -1
 
+    current_row_test_index = -1
     last_row_index = -1
     num_of_iterations_done = 0
     new_starting_value_for_nonzero_matrix = 0
