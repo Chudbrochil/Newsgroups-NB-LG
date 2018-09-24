@@ -47,7 +47,25 @@ def np_train(data):
     # pass the dataset except the classifications
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
 
-    classify_training_data_test(data[:5, :], prior_probabilities, likelihood_probabilities)
+    # Making sure we can classify our training data correctly.
+    #classify_training_data_test(data[:5, :-1], prior_probabilities, likelihood_probabilities)
+
+    # Loading the testing data, getting our predictions, and then outputting them.
+    test_data = scipy.sparse.load_npz("testing_sparse.npz")
+    list_of_predictions = classify_training_data_test(test_data[:5, :], prior_probabilities, likelihood_probabilities)
+    output_predictions("output.csv", list_of_predictions, 12001)
+
+
+def output_predictions(file_name, list_of_predictions, starting_num):
+
+    output_file = open(file_name, "w")
+
+    i = 0
+    for prediction in list_of_predictions:
+        output_file.write("%d,%d\n" % (starting_num + i, int(prediction)))
+        i += 1
+
+    output_file.close()
 
 
 # y_prediction function
@@ -60,6 +78,10 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
     # calculate function for each classification
     sum_weighted_counts_likelihood = 0
 
+    # Getting the length of the features, we should be passing in the data without
+    # classifications. This should be equal to 61188
+    length_of_features = data.shape[1]
+
     # for every example
     for w in range(5):
         print("On example: %d" % w)
@@ -67,8 +89,9 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
         for i in range(20):
             log_prior = math.log(prior_probabilities["class" + str(i+1)])
             # go through every feature
-            for j in range(61189):
+            for j in range(length_of_features):
                 # count for current feature for current example
+                #print("w: %d j: %d" % (w, j))
                 current_count = data[w, j]
 
                 # log likelihood for current class and feature
@@ -95,6 +118,8 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
         list_of_predictions.append((max_index+1)) # Since the classes are 1-indexed.
 
     print(list_of_predictions)
+
+    return list_of_predictions
 
 
 # for every class, count the total amount of words in that class
@@ -170,12 +195,12 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         likelihood_matrix[current_classification - 1][col_index] += current_val
 
     # Now that we have looped over all the non-zero data, we need to add laplace
-    # (1/61189) and divide it all by "total all words in Yk + 1"
+    # (1/61188) and divide it all by "total all words in Yk + 1"
     for x in range(20):
         total_words = total_words_in_class["class" + str(x + 1)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += (1.0 / 61189)
+            enhanced_likelihood += (1.0 / 61188)
             enhanced_likelihood /= (total_words + 1)
             likelihood_matrix[x][y] = enhanced_likelihood
 
