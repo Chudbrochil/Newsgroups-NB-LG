@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 import scipy.sparse
 import numpy as np
@@ -8,7 +10,6 @@ import operator
 
 # indexing into sparse matrix:
 # https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
-
 # https://stackoverflow.com/questions/38836100/accessing-sparse-matrix-elements
 
 """
@@ -21,6 +22,8 @@ import operator
     Required Libraries:
         - SciPy 1.0.0 (loading the npz format as a csr_matrix) or higher
 """
+
+num_of_classes = 20
 
 
 def main():
@@ -56,6 +59,8 @@ def np_train(data):
     output_predictions("output.csv", predictions, 12001)
 
 
+# output_predictions()
+# Outputs the predictions from classification and outputs them into a file.
 def output_predictions(file_name, predictions, starting_num):
 
     output_file = open(file_name, "w")
@@ -69,7 +74,9 @@ def output_predictions(file_name, predictions, starting_num):
     output_file.close()
 
 
-# y_prediction function
+# classify_training_data_set() TODO: Should we rename this?
+# Classifies a set of data (validation or testing) based upon the likelihood
+# matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def classify_training_data_test(data, prior_probabilities, likelihood_probabilities):
 
     # Getting the length of the features, we should be passing in the data without
@@ -107,7 +114,6 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
                 sum_weighted_counts_likelihood += multiplied_count_likelihood
 
             probability_for_current_class = log_prior + sum_weighted_counts_likelihood
-            sum_weighted_counts_likelihood = 0
 
             # Finding the class with highest probability prediction
             if probability_for_current_class > highest_prob:
@@ -116,16 +122,14 @@ def classify_training_data_test(data, prior_probabilities, likelihood_probabilit
 
         predictions[w] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
 
-
     print("Dictionary of predictions")
     print(predictions)
     return predictions
 
 
-#def classify():
-
-
-# for every class, count the total amount of words in that class
+# determine_total_words_in_classes()
+# Calculating how many total words are in each classification.
+# This is useful in likelihood calculation in denominator.
 def determine_total_words_in_classes(data):
 
     # We don't want the class counts to interfere with data counts
@@ -137,7 +141,7 @@ def determine_total_words_in_classes(data):
 
     # Initializing 20 dictionary elements for each newsgroup
     total_words_in_class = {}
-    for x in range(20):
+    for x in range(num_of_classes):
         total_words_in_class["class" + str(x)] = 0
 
     for x in range(12000):
@@ -147,16 +151,17 @@ def determine_total_words_in_classes(data):
     return total_words_in_class
 
 
-# return a dictionary of the prior probabilities for ["class_k"]
-# calculate P(Y) -> # of examples labeled with class k / total examples
-# TODO: possibly change hard coded iteration
+# determine_prior_probabilities()
+# This calculates the prior ratio's of a given class / total examples.
+# i.e. "alt.atheism" has 490 words out of 18900 words total.
+# Returns a dictionary of the prior probabilities (Represented in formula by P(Y))
 def determine_prior_probabilities(classifications):
 
     class_counts = {}
     prior_probabilities = {}
 
     # initialize class counts for dictionary
-    for i in range(20):
+    for i in range(num_of_classes):
         class_counts["class" + str(i)] = 0
 
     # add 1 for every label you encounter (1 instance)
@@ -164,18 +169,19 @@ def determine_prior_probabilities(classifications):
         class_counts["class" + str(label - 1)] += 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
 
     # calculate the prior probabilities by dividing each class count by the total examples
-    for i in range(20):
+    for i in range(num_of_classes):
         prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
 
     return prior_probabilities
 
 
+# determine_likelihoods()
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
-    likelihood_matrix = np.zeros((20, 61189)) # NOTE: 61189 because we have classifications also.
+    likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
 
     # saving current row saves us ~1.5m hits for the entire data
@@ -197,7 +203,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
 
     # Now that we have looped over all the non-zero data, we need to add laplace
     # (1/61188) and divide it all by "total all words in Yk + 1"
-    for x in range(20):
+    for x in range(num_of_classes):
         total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
@@ -208,6 +214,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
     return likelihood_matrix
 
 
+# load_classes()
 # Loads the file that has the newsgroup classifications in it and returns
 # the classifications as a list.
 def load_classes(file_name):
