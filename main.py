@@ -55,7 +55,8 @@ def nb_train(data):
 
     # Loading the testing data, getting our predictions, and then outputting them.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
-    predictions = nb_predict(test_data[:, :-1], prior_probabilities, likelihood_probabilities)
+
+    predictions = nb_predict(data[:10, :-1], prior_probabilities, likelihood_probabilities)
     output_predictions("output.csv", predictions, 12001)
 
 
@@ -158,7 +159,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
                 # Finding the class with highest probability prediction
                 if probability_for_current_class > highest_prob:
                     highest_prob = probability_for_current_class
-                    highest_prob_index = i
+                    highest_prob_index = k
 
             #print("Num of iterations done: " + str(num_of_items_in_current_row))
             predictions[current_nonzero_row_index] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
@@ -168,6 +169,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
             new_starting_value_for_nonzero_matrix += num_of_items_in_current_row
 
     print("Dictionary of predictions")
+    print(predictions)
     end_time = time.time()
     print("Total time: " + str(end_time - start_time))
     return predictions
