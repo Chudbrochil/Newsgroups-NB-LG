@@ -8,6 +8,7 @@ import time
 import copy
 import operator
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 # indexing into sparse matrix:
 # https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
@@ -28,6 +29,7 @@ num_of_classes = 20
 
 
 def main():
+
     #this should load in a csr_matrix
     data = scipy.sparse.load_npz("training_sparse.npz")
     # Loading the testing data, getting our predictions, and then outputting them.
@@ -40,20 +42,35 @@ def main():
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
-    # Training naive bayes
-    likelihood_probabilities, prior_probabilities = nb_train(X_train)
-    predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
+    """ Ugly parameter tuning search """
+    # beta is the term for Laplace smoothing
+    #    1/100,000, 1/10,000, 1/1,000, 1/100, 1/10
+    betas = [.00001, .0001, .001, .01, .1, 1]
+    accuracies = []
 
-    accuracy = 0
-    for i in range(X_validation.shape[0]):
-        if(predictions[i] == X_validation_classification[i]):
-            accuracy += 1
-    accuracy /= X_validation.shape[0]
-    print("Accuracy on validation set: " + str(accuracy))
+    for beta in betas:
+        # Training naive bayes
+        likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
+        predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
+
+        accuracy = 0
+        for i in range(X_validation.shape[0]):
+            if(predictions[i] == X_validation_classification[i]):
+                accuracy += 1
+        accuracy /= X_validation.shape[0]
+        print("Accuracy on validation set with beta "  + str(beta) + " : "+ str(accuracy))
+        accuracies.append(accuracy)
+
+    print(betas)
+    print(accuracies)
+    plt.plot(betas, accuracies, linewidth=2.0)
+    plt.xlabel('Beta')
+    plt.ylabel('Accuracy')
+    plt.show()
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
-def nb_train(data):
+def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
@@ -67,7 +84,7 @@ def nb_train(data):
     prior_probabilities= determine_prior_probabilities(data[:, -1:])
 
     # pass the dataset except the classifications
-    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class)
+    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta)
 
     # Making sure we can classify our training data correctly.
     #classify_data(data[:1, :-1], prior_probabilities, likelihood_probabilities)
@@ -244,7 +261,7 @@ def determine_prior_probabilities(classifications):
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-def determine_likelihoods(data, non_zero_data, total_words_in_class):
+def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
 
     likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
@@ -272,8 +289,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class):
         total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += 1.0 / 100 #(1.0 / 61188)
-            enhanced_likelihood /= (total_words + 61188 / 100)#(total_words + 1)
+            enhanced_likelihood += beta #(1.0 / 61188)
+            enhanced_likelihood /= (total_words + (61188 * beta))#(total_words + 1)
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
