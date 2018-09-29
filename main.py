@@ -71,9 +71,13 @@ def main():
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
     """
-    logisic_reg_train(X_train)
+    logisic_reg_train(X_train[:, :-1], X_train[:, -1:])
 
-def logisic_reg_train(X_train):
+
+# very ugly non-working memory erroring log. reg. implementation to help my understanding.
+# can completely erase
+def logisic_reg_train(X_train, Y):
+
     print("Shape of input: " + str(X_train.shape))
     # num of examples
     m = X_train.shape[0]
@@ -82,16 +86,45 @@ def logisic_reg_train(X_train):
     # num of features
     n = X_train.shape[1]
 
-    learning_rate = 0.05
+    learning_rate = 0.01
     lambda_regularization = 0.01
 
     # (num_of_classes, num_of_examples) -> (m, k) matrix, where the entry delta,ij = 1 if for that example j the class is i
     delta = np.zeros((k, m))
-    delta = initialize_delta(delta)
+    delta = initialize_delta(delta, Y)
+
+    # append column of 1s to sparse matrix X_train
+    column_of_ones = np.full((m, 1), 1)
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)))
+
+    # Weights for calculating conditional probability
+    W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
+    #W = np.zeros((k, n+1))
+
+    # Matrix of probability values
+    conditional_likelihood_probability = np.zeros((k, m))
+
+    for i in range(5):
+        print("iteration: " + str(i))
+        conditional_likelihood_probability = W.dot(X.transpose()).expm1()
+        W = W + (learning_rate * ((delta - conditional_likelihood_probability) * X)
+
+    # return matrix of weights to use for predictions
+    return W
 
 # Set matrix class entry equal to 1 for that example, 0 for all other classes
-def initialize_delta(delta):
-    return 0
+def initialize_delta(delta, Y):
+    Y_values = Y.data
+    current_example = 0
+
+    # need to subtract 1 from the label because labels are 1-indexed
+    for label in Y_values:
+        # for class label on the current example, set index = 1
+        delta[label-1, current_example] = 1
+        current_example += 1
+
+    return delta
+
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
