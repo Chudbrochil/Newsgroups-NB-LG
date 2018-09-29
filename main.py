@@ -39,10 +39,11 @@ def main():
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
     X_validation_classification = X_validation[:, -1:]
 
+    """ Naive bayes stuff
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
-    """ Ugly parameter tuning search """
+    # Ugly parameter tuning search
     # beta is the term for Laplace smoothing
     #    1/100,000, 1/10,000, 1/1,000, 1/100, 1/10
     betas = [.00001, .0001, .001, .01, .1, 1]
@@ -69,6 +70,28 @@ def main():
     plt.show()
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    """
+    logisic_reg_train(X_train)
+
+def logisic_reg_train(X_train):
+    print("Shape of input: " + str(X_train.shape))
+    # num of examples
+    m = X_train.shape[0]
+    # num of classes
+    k = 20
+    # num of features
+    n = X_train.shape[1]
+
+    learning_rate = 0.05
+    lambda_regularization = 0.01
+
+    # (num_of_classes, num_of_examples) -> (m, k) matrix, where the entry delta,ij = 1 if for that example j the class is i
+    delta = np.zeros((k, m))
+    delta = initialize_delta(delta)
+
+# Set matrix class entry equal to 1 for that example, 0 for all other classes
+def initialize_delta(delta):
+    return 0
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
@@ -294,7 +317,6 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
-
 
 # load_classes()
 # Loads the file that has the newsgroup classifications in it and returns
