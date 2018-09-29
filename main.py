@@ -98,16 +98,18 @@ def logisic_reg_train(X_train, Y):
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)))
 
     # Weights for calculating conditional probability
-    W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
-    #W = np.zeros((k, n+1))
+    #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
+    W = np.zeros((k, n+1), dtype="float64")
 
     # Matrix of probability values
-    conditional_likelihood_probability = np.zeros((k, m))
+    conditional_likelihood_probability = np.zeros((k, m), dtype="float64")
 
     for i in range(5):
-        print("iteration: " + str(i))
-        conditional_likelihood_probability = W.dot(X.transpose()).expm1()
-        W = W + (learning_rate * ((delta - conditional_likelihood_probability) * X)
+        print("iteration" + str(i))
+        Z = (W.dot(X.transpose())).expm1()
+        Z.data = np.reciprocal(Z.data)
+        conditional_likelihood_probability = Z
+        W = W + (learning_rate * (np.dot(X, (delta - conditional_likelihood_probability))))
 
     # return matrix of weights to use for predictions
     return W
