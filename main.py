@@ -10,10 +10,6 @@ import operator
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-# indexing into sparse matrix:
-# https://stackoverflow.com/questions/24665269/how-do-you-edit-cells-in-a-sparse-matrix-using-scipy
-# https://stackoverflow.com/questions/38836100/accessing-sparse-matrix-elements
-
 """
     Project 2 CS 529 - Naive Bayes and Logistic Regression from scratch
 
@@ -37,9 +33,14 @@ def main():
 
     # can set shuffle to True, will still work
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
-    X_validation_classification = X_validation[:, -1:]
 
-    """ Naive bayes stuff
+    """ If you want to solve the problem with naive bayes """
+    # naive_bayes_solution(X_train, X_validation, test_dat)
+
+    logistic_regression_solution(X_train, X_validation, test_data)
+
+# naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
+def naive_bayes_solution(X_train, X_validation, test_data):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
@@ -49,6 +50,7 @@ def main():
     betas = [.00001, .0001, .001, .01, .1, 1]
     accuracies = []
 
+    # Go through and train on each beta
     for beta in betas:
         # Training naive bayes
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
@@ -64,21 +66,57 @@ def main():
 
     print(betas)
     print(accuracies)
-    plt.plot(betas, accuracies, linewidth=2.0)
+    # plot on x log scale
+    plt.semilogx(betas, accuracies, linewidth=2.0)
     plt.xlabel('Beta')
     plt.ylabel('Accuracy')
     plt.show()
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
-    """
-    logisic_reg_train(X_train[:, :-1], X_train[:, -1:])
 
+# logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
+# Trains using Gradient descent
+def logistic_regression_solution(X_train, X_validation, test_data):
+    # separate features and classifications
+    X_train_data = X_train[:, :-1]
+    X_train_classifications = X_train[:, -1:]
 
-# very ugly non-working memory erroring log. reg. implementation to help my understanding.
-# can completely erase
+    X_validation_data = X_validation[:, :-1]
+    X_validation_classification = X_validation[:, -1:]
+
+    # train/learn the weights for the matrix W
+    W = logisic_reg_train(X_train_data, X_train_classifications)
+
+    # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
+    column_of_ones = np.full((X_validation.shape[0], 1), 1)
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
+    # same thing but use test data instead
+    # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
+
+    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
+    X = normalize_columns(X)
+
+    # will return the labels on the validation data, will also print our accuracy
+    log_reg_predict(X, W, X_validation_classification, "validation")
+
+    # labels = log_reg_predict(X, W, None, "testing")
+    # if predicting on test
+    # output_predictions("log_reg_testdata_output.csv", labels, 12001)
+
+# logisic_reg_train: Logistic reg. implementation using Gradient Descent to find the matrix W
+# that maximizes the probabilty we predict the correct class Y given features X
+# This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
 def logisic_reg_train(X_train, Y):
 
+    # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
     print("Shape of input: " + str(X_train.shape))
+    learning_rate = 0.001
+    print("Learning rate: " + str(learning_rate))
+    num_of_training_iterations = 100
+    print("Num of training iterations: " + str(num_of_training_iterations))
+    lambda_regularization = 0.01
+    print("Lambda regularization value: " + str(lambda_regularization))
+
     # num of examples
     m = X_train.shape[0]
     # num of classes
@@ -86,39 +124,43 @@ def logisic_reg_train(X_train, Y):
     # num of features
     n = X_train.shape[1]
 
-    learning_rate = 0.01
-    lambda_regularization = 0.01
-
     # (num_of_classes, num_of_examples) -> (m, k) matrix, where the entry delta,ij = 1 if for that example j the class is i
     delta = np.zeros((k, m))
-    delta = initialize_delta(delta, Y)
+    delta = scipy.sparse.csr_matrix(initialize_delta(delta, Y))
 
-    # append column of 1s to sparse matrix X_train
+    # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
     column_of_ones = np.full((m, 1), 1)
-    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)))
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
+    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
+    X = normalize_columns(X)
 
-    # Weights for calculating conditional probability
+    # Weights for calculating conditional probability, initialized as all 0
     #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
-    W = np.zeros((k, n+1), dtype="float64")
+    W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
 
-    # Matrix of probability values
-    conditional_likelihood_probability = np.zeros((k, m), dtype="float64")
-
-    for i in range(5):
+    for i in range(num_of_training_iterations):
         print("iteration" + str(i))
+        # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-        Z.data = np.reciprocal(Z.data)
-        conditional_likelihood_probability = Z
-        W = W + (learning_rate * (np.dot(X, (delta - conditional_likelihood_probability))))
+        Z.data = Z.data + 1
+        # gradient w.r.t. Weights with regularization
+        dZ = ((delta - Z) * X) - (lambda_regularization * W)
+        # learning rule
+        W = W + (learning_rate * dZ)
+
+        # make predictions training data for each iteration, this adds min. time as the heaviest thing is normalizing
+        log_reg_predict(X, W, Y, "training")
 
     # return matrix of weights to use for predictions
     return W
 
-# Set matrix class entry equal to 1 for that example, 0 for all other classes
+# Set index equal to 1 if it's the same index as the class , 0 for all other classes, (Dirac Delta function)
+# returns a matrix based on Dirac Delta function
 def initialize_delta(delta, Y):
     Y_values = Y.data
     current_example = 0
 
+    # go through each examples classification and index into the matrix delta and set that indice to 1
     # need to subtract 1 from the label because labels are 1-indexed
     for label in Y_values:
         # for class label on the current example, set index = 1
@@ -127,6 +169,58 @@ def initialize_delta(delta, Y):
 
     return delta
 
+# normalize_columns: takes the sum of every column and divides the nonzero data for a feature
+# by that features summation
+ # OPTIMIZE: Takes very long...
+def normalize_columns(Z):
+
+    # take the sum of each column
+    column_sums = Z.sum(axis=0)
+
+    Z_nonzeros = Z.nonzero()
+    len_z_nonzeros = len(Z_nonzeros[0])
+
+    for i in range(len_z_nonzeros):
+        row = Z_nonzeros[0][i]
+        col = Z_nonzeros[1][i]
+
+        # print(column_sums[0, col])
+        Z[row, col] /= column_sums[0, col]
+
+    return Z
+
+# log_reg_predict: returns the predictions for the given data X. These predictions were
+# learned by the weight matrix W which we trained using GD in logisic_reg_train
+# Also prints the accuracy for the given data
+def log_reg_predict(X, W, Y, predictions_on = "Training"):
+    predictions = (W.dot(X.transpose())).expm1()
+    predictions = predictions.toarray()
+
+    max_value = -math.inf
+    max_index = -1
+    labels = []
+
+    # for every example
+    for j in range(predictions.shape[1]):
+        for i in range(20):
+            #print(str(i) + " : " + str(predictions[i][j]))
+            if predictions[i][j] > max_value:
+                max_value = predictions[i][j]
+                max_index = i+1
+        labels.append(max_index)
+        # print("")
+        max_value = -math.inf
+        max_index = -1
+
+    if Y != None:
+        accuracy = 0
+        for i in range(len(labels)):
+            if labels[i] == Y[i]:
+                accuracy += 1
+        accuracy /= len(labels)
+    print(accuracy)
+
+    return labels
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
@@ -148,24 +242,6 @@ def nb_train(data, beta):
     #classify_data(data[:1, :-1], prior_probabilities, likelihood_probabilities)
 
     return likelihood_probabilities, prior_probabilities
-
-
-# output_predictions()
-# Outputs the predictions from classification and outputs them into a file.
-def output_predictions(file_name, predictions, starting_num):
-
-    output_file = open(file_name, "w")
-
-    output_file.write("id,class\n")
-
-    i = 0
-    for prediction in predictions:
-        index = starting_num + i
-        output_file.write("%d,%d\n" % (index, int(predictions[i])))
-        i += 1
-
-    output_file.close()
-
 
 # nb_predict()
 # Calculates the prediction function for Naive Bayes
@@ -352,6 +428,22 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
+
+# output_predictions()
+# Outputs the predictions from classification and outputs them into a file.
+def output_predictions(file_name, predictions, starting_num):
+
+    output_file = open(file_name, "w")
+
+    output_file.write("id,class\n")
+
+    i = 0
+    for prediction in predictions:
+        index = starting_num + i
+        output_file.write("%d,%d\n" % (index, int(predictions[i])))
+        i += 1
+
+    output_file.close()
 
 # load_classes()
 # Loads the file that has the newsgroup classifications in it and returns
