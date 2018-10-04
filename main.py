@@ -90,6 +90,7 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
     column_of_ones = np.full((X_validation.shape[0], 1), 1)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
+
     # same thing but use test data instead
     # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
@@ -149,7 +150,7 @@ def logisic_reg_train(X_train, Y):
         W = W + (learning_rate * dZ)
 
         # make predictions training data for each iteration, this adds min. time as the heaviest thing is normalizing
-        log_reg_predict(X, W, Y, "training")
+        #log_reg_predict(X, W, Y, "training")
 
     # return matrix of weights to use for predictions
     return W
@@ -175,17 +176,9 @@ def initialize_delta(delta, Y):
 def normalize_columns(Z):
 
     # take the sum of each column
-    column_sums = Z.sum(axis=0)
-
-    Z_nonzeros = Z.nonzero()
-    len_z_nonzeros = len(Z_nonzeros[0])
-
-    for i in range(len_z_nonzeros):
-        row = Z_nonzeros[0][i]
-        col = Z_nonzeros[1][i]
-
-        # print(column_sums[0, col])
-        Z[row, col] /= column_sums[0, col]
+    column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
+    row_indices, col_indices = Z.nonzero()
+    Z.data /= column_sums[col_indices]  #TODO: this is wild
 
     return Z
 
