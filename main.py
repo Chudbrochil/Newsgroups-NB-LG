@@ -8,6 +8,7 @@ import time
 import copy
 import operator
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import TruncatedSVD
 import matplotlib.pyplot as plt
 
 """
@@ -84,6 +85,13 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
 
+    # TODO: figure out dimensionality reduction techinique
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
+    #
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))
+
     # train/learn the weights for the matrix W
     W = logisic_reg_train(X_train_data, X_train_classifications)
 
@@ -131,6 +139,9 @@ def logisic_reg_train(X_train, Y):
 
     # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
     column_of_ones = np.full((m, 1), 1)
+    print(X_train.shape)
+    print(type(X_train))
+
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
     # normalize the features (sum each column up and divide each nonzero element by that columns sum)
     X = normalize_columns(X)
@@ -143,7 +154,7 @@ def logisic_reg_train(X_train, Y):
         print("iteration" + str(i))
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-        Z.data = Z.data + 1
+        # Z.data = Z.data + 1
         # gradient w.r.t. Weights with regularization
         dZ = ((delta - Z) * X) - (lambda_regularization * W)
         # learning rule
@@ -172,7 +183,7 @@ def initialize_delta(delta, Y):
 
 # normalize_columns: takes the sum of every column and divides the nonzero data for a feature
 # by that features summation
- # OPTIMIZE: Takes very long...
+ # TODO: study python broadcasting...
 def normalize_columns(Z):
 
     # take the sum of each column
