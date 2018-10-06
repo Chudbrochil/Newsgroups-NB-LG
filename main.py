@@ -36,9 +36,9 @@ def main():
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
     """ If you want to solve the problem with naive bayes """
-    # naive_bayes_solution(X_train, X_validation, test_dat)
+    naive_bayes_solution(X_train, X_validation, test_data)
 
-    logistic_regression_solution(X_train, X_validation, test_data)
+    #logistic_regression_solution(X_train, X_validation, test_data)
 
 # naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
 def naive_bayes_solution(X_train, X_validation, test_data):
@@ -427,8 +427,8 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
         total_words = total_words_in_class["class" + str(x)]
         for y in range(61189):
             enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += beta #(1.0 / 61188)
-            enhanced_likelihood /= (total_words + (61188 * beta))#(total_words + 1)
+            enhanced_likelihood += beta
+            enhanced_likelihood /= (total_words + (61188 * beta))
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
