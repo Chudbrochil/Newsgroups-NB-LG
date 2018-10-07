@@ -57,11 +57,13 @@ def naive_bayes_solution(X_train, X_validation, test_data):
 
     # Ugly parameter tuning search
     # beta is the term for Laplace smoothing
-    #    1/100,000, 1/10,000, 1/1,000, 1/100, 1/10
-    betas = [.00001, .0001, .001, .01, .1]
+    betas = [.00001, .0001, .001, .01, .1, 1]
+    #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     accuracies = []
 
     # Go through and train on each beta
+    # TODO: Store likelihood_probabilities and prior_probabilities that best
+    # classify the validation data and then use this to train
     for beta in betas:
         # Training naive bayes
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
@@ -75,6 +77,7 @@ def naive_bayes_solution(X_train, X_validation, test_data):
         print("Accuracy on validation set with beta "  + str(beta) + " : "+ str(accuracy))
         accuracies.append(accuracy)
 
+
     print(betas)
     print(accuracies)
     # plot on x log scale
@@ -83,7 +86,7 @@ def naive_bayes_solution(X_train, X_validation, test_data):
     plt.ylabel('Accuracy')
     plt.show()
 
-    output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    output_predictions("validation_output.csv", best_validation_predictions, X_train.shape[0])
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
@@ -111,24 +114,12 @@ def nb_train(data, beta):
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def nb_predict(data, prior_probabilities, likelihood_probabilities):
-    # Getting the length of the features, we should be passing in the data without
-    # classifications. This should be equal to 61188
-    length_of_features = data.shape[1]
-    length_of_examples = data.shape[0]
 
     start_time = time.time()
-
-    #gives a tuple of rows and columns of nonzero data
-    nonzero_test_data = data.nonzero()
 
     print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
 
     length_of_nonzero_test_data = len(nonzero_test_data[0])
-
-    predictions = {}
-    current_nonzero_row_index = -1
-    prev_row_index = -1
-    starting_value_for_nonzero_indexing = 0
 
     log_priors = []
     for value in prior_probabilities.values():
@@ -153,77 +144,6 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
     for index in maximum_indices_for_each_example:
         predictions.append(index + 1)
     print("Predictions shape: " + str(np.array(predictions).shape))
-
-    """
-    # for every example (w is an index, but we're going to treat it like we're looping through every row at a time in data)
-    for row in range(length_of_nonzero_test_data):
-        current_nonzero_row_index = nonzero_test_data[0][row]
-
-        # if we're dealing with a new example, we will calculate a prediction,
-        # otherwise we will continue until we get to a new row. This gives us a way
-        # to check our indexing for the tuples of indexing. We should always match the current_nonzero_row_index and current_row below.
-        if(prev_row_index != current_nonzero_row_index):
-
-            #print("On example: %d" % current_nonzero_row_index)
-            highest_prob = -math.inf
-            highest_prob_index = -1
-
-            # update last row index to the new row we're on
-            prev_row_index = current_nonzero_row_index
-
-            # test every possible classification for the current example (row)
-            for k in range(20):
-                # the number of entries in the current row (we will skip this amount to start at the next row)
-                num_of_items_in_current_row = 0
-                # summation variable in y_prediction function
-                sum_weighted_counts_likelihood = 0
-
-                log_prior = math.log(prior_probabilities["class" + str(k)])
-
-                # loop through every nonzero feature (can skip words with nonzero counts because it would add 0)
-                for i in range(starting_value_for_nonzero_indexing, length_of_nonzero_test_data):
-
-                    #TODO why do I have to catch this error? Investigate starting_value_for_nonzero_indexing
-                    if(i >= length_of_nonzero_test_data):
-                        print("Catching possible index out of bounds exception")
-                        break
-
-                    # have to add new starting value because we are not remove elements that we've
-                    # already visited in the tuple of nonzero indices
-                    current_row = nonzero_test_data[0][i]
-
-                    # if we're not on the same example, we need to break, go to next class,
-                    # and repeat the same iterations but for the new class
-                    if current_row != current_nonzero_row_index:
-                        break
-
-                    current_col = nonzero_test_data[1][i]
-                    # weight of this feature in the new dataset
-                    current_count = data[current_row, current_col]
-                    # get the likelihood of current class for current column
-                    log_of_likelihood = math.log(likelihood_probabilities[k][current_col])
-                    weighted_likelihood = current_count * log_of_likelihood
-                    sum_weighted_counts_likelihood += weighted_likelihood
-
-                    # increment the total amount of features processed in this row ()
-                    num_of_items_in_current_row += 1
-
-                probability_for_current_class = log_prior + sum_weighted_counts_likelihood
-
-                # Finding the class with highest probability prediction
-                if probability_for_current_class > highest_prob:
-                    highest_prob = probability_for_current_class
-                    highest_prob_index = k
-
-            #print("Num of iterations done: " + str(num_of_items_in_current_row))
-            predictions[current_nonzero_row_index] = highest_prob_index + 1 # NOTE: Since the classes are 1-indexed.
-
-            # after every classification has been processed, we need to update the starting point
-            # to the next row of nonzero data
-            starting_value_for_nonzero_indexing += num_of_items_in_current_row
-            # print(starting_value_for_nonzero_indexing)
-
-    """
 
     #print("Dictionary of predictions")
     #print(predictions)
