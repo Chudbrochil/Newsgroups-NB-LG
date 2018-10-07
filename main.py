@@ -130,6 +130,31 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
     prev_row_index = -1
     starting_value_for_nonzero_indexing = 0
 
+    log_priors = []
+    for value in prior_probabilities.values():
+        log_value = math.log(value)
+        log_priors.append(log_value)
+
+    likelihood_probabilities.data = np.log(likelihood_probabilities.data)
+    # gives matrix of (examples, classes)
+    print(likelihood_probabilities.shape)
+    print(data.shape)
+
+    new_data_dotted_likelihoods = data.dot(np.transpose(likelihood_probabilities))
+    new_data_dotted_likelihoods_plus_priors = new_data_dotted_likelihoods + log_priors
+
+    print("New data dotted with likelihood: " + str(new_data_dotted_likelihoods_plus_priors.shape))
+
+    # take maximums of each example (go through every class for an example and find the max)
+    maximum_indices_for_each_example = new_data_dotted_likelihoods_plus_priors.argmax(axis=1)
+    print("Maximum indices" + str(maximum_indices_for_each_example.shape))
+
+    predictions = []
+    for index in maximum_indices_for_each_example:
+        predictions.append(index + 1)
+    print("Predictions shape: " + str(np.array(predictions).shape))
+
+    """
     # for every example (w is an index, but we're going to treat it like we're looping through every row at a time in data)
     for row in range(length_of_nonzero_test_data):
         current_nonzero_row_index = nonzero_test_data[0][row]
@@ -197,6 +222,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
             # to the next row of nonzero data
             starting_value_for_nonzero_indexing += num_of_items_in_current_row
             # print(starting_value_for_nonzero_indexing)
+
+    """
 
     #print("Dictionary of predictions")
     #print(predictions)
