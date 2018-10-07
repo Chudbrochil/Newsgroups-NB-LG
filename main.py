@@ -23,7 +23,15 @@ import matplotlib.pyplot as plt
 """
 
 num_of_classes = 20
-
+array_of_most_imp_features = [130, 573, 1575, 1022, 1017,  455,  2044,   833,   367,   491,   392,   920,
+232,   234,   238,   244,   250,   281,   294,   159,   296,   298,   300,   143,
+142,   141,   303,   138,   306,   136,   311,   313,   339,   387,   437,   457,
+465,   121,   466,   472,   473,   475,   476,   103,  1029,   530,    99, 98,
+1027,  1014,  1318,   629,   643,  1002,   994,   662,   721,    82,   747, 80,
+79,   748,   977,    72,    71,   765,   769,    66,   774,    59,   777,   968,
+791,    51,    50,   812,    48,    47,   822,   941,    43,    41,   827,   929,
+32,   849,   862,    29,    28,   876,    26,    24,    22,   885,    15,   901,
+11,   921,   911, 61188]
 
 def main():
 
@@ -36,19 +44,21 @@ def main():
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
     """ If you want to solve the problem with naive bayes """
-    # naive_bayes_solution(X_train, X_validation, test_dat)
+    naive_bayes_solution(X_train, X_validation, test_data)
 
-    logistic_regression_solution(X_train, X_validation, test_data)
+    #logistic_regression_solution(X_train, X_validation, test_data)
 
 # naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
 def naive_bayes_solution(X_train, X_validation, test_data):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
+    X_validation_classification = X_validation[:, -1:]
+
     # Ugly parameter tuning search
     # beta is the term for Laplace smoothing
     #    1/100,000, 1/10,000, 1/1,000, 1/100, 1/10
-    betas = [.00001, .0001, .001, .01, .1, 1]
+    betas = [.00001, .0001, .001, .01, .1]
     accuracies = []
 
     # Go through and train on each beta
@@ -74,157 +84,6 @@ def naive_bayes_solution(X_train, X_validation, test_data):
     plt.show()
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
-
-# logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
-# Trains using Gradient descent
-def logistic_regression_solution(X_train, X_validation, test_data):
-    # separate features and classifications
-    X_train_data = X_train[:, :-1]
-    X_train_classifications = X_train[:, -1:]
-
-    X_validation_data = X_validation[:, :-1]
-    X_validation_classification = X_validation[:, -1:]
-
-    # TODO: figure out dimensionality reduction techinique
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
-    #
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))
-
-    # train/learn the weights for the matrix W
-    W = logisic_reg_train(X_train_data, X_train_classifications)
-
-    # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
-    column_of_ones = np.full((X_validation.shape[0], 1), 1)
-    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
-
-    # same thing but use test data instead
-    # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
-
-    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
-    X = normalize_columns(X)
-
-    # will return the labels on the validation data, will also print our accuracy
-    log_reg_predict(X, W, X_validation_classification, "validation")
-
-    # labels = log_reg_predict(X, W, None, "testing")
-    # if predicting on test
-    # output_predictions("log_reg_testdata_output.csv", labels, 12001)
-
-# logisic_reg_train: Logistic reg. implementation using Gradient Descent to find the matrix W
-# that maximizes the probabilty we predict the correct class Y given features X
-# This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
-def logisic_reg_train(X_train, Y):
-
-    # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
-    print("Shape of input: " + str(X_train.shape))
-    learning_rate = 0.001
-    print("Learning rate: " + str(learning_rate))
-    num_of_training_iterations = 100
-    print("Num of training iterations: " + str(num_of_training_iterations))
-    lambda_regularization = 0.01
-    print("Lambda regularization value: " + str(lambda_regularization))
-
-    # num of examples
-    m = X_train.shape[0]
-    # num of classes
-    k = 20
-    # num of features
-    n = X_train.shape[1]
-
-    # (num_of_classes, num_of_examples) -> (m, k) matrix, where the entry delta,ij = 1 if for that example j the class is i
-    delta = np.zeros((k, m))
-    delta = scipy.sparse.csr_matrix(initialize_delta(delta, Y))
-
-    # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
-    column_of_ones = np.full((m, 1), 1)
-    print(X_train.shape)
-    print(type(X_train))
-
-    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
-    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
-    X = normalize_columns(X)
-
-    # Weights for calculating conditional probability, initialized as all 0
-    #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
-    W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
-
-    for i in range(num_of_training_iterations):
-        print("iteration" + str(i))
-        # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
-        Z = (W.dot(X.transpose())).expm1()
-        # Z.data = Z.data + 1
-        # gradient w.r.t. Weights with regularization
-        dZ = ((delta - Z) * X) - (lambda_regularization * W)
-        # learning rule
-        W = W + (learning_rate * dZ)
-
-        # make predictions training data for each iteration, this adds min. time as the heaviest thing is normalizing
-        #log_reg_predict(X, W, Y, "training")
-
-    # return matrix of weights to use for predictions
-    return W
-
-# Set index equal to 1 if it's the same index as the class , 0 for all other classes, (Dirac Delta function)
-# returns a matrix based on Dirac Delta function
-def initialize_delta(delta, Y):
-    Y_values = Y.data
-    current_example = 0
-
-    # go through each examples classification and index into the matrix delta and set that indice to 1
-    # need to subtract 1 from the label because labels are 1-indexed
-    for label in Y_values:
-        # for class label on the current example, set index = 1
-        delta[label-1, current_example] = 1
-        current_example += 1
-
-    return delta
-
-# normalize_columns: takes the sum of every column and divides the nonzero data for a feature
-# by that features summation
- # TODO: study python broadcasting...
-def normalize_columns(Z):
-
-    # take the sum of each column
-    column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
-    row_indices, col_indices = Z.nonzero()
-    Z.data /= column_sums[col_indices]  #TODO: this is wild
-
-    return Z
-
-# log_reg_predict: returns the predictions for the given data X. These predictions were
-# learned by the weight matrix W which we trained using GD in logisic_reg_train
-# Also prints the accuracy for the given data
-def log_reg_predict(X, W, Y, predictions_on = "Training"):
-    predictions = (W.dot(X.transpose())).expm1()
-    predictions = predictions.toarray()
-
-    max_value = -math.inf
-    max_index = -1
-    labels = []
-
-    # for every example
-    for j in range(predictions.shape[1]):
-        for i in range(20):
-            #print(str(i) + " : " + str(predictions[i][j]))
-            if predictions[i][j] > max_value:
-                max_value = predictions[i][j]
-                max_index = i+1
-        labels.append(max_index)
-        # print("")
-        max_value = -math.inf
-        max_index = -1
-
-    if Y != None:
-        accuracy = 0
-        for i in range(len(labels)):
-            if labels[i] == Y[i]:
-                accuracy += 1
-        accuracy /= len(labels)
-    print(accuracy)
-
-    return labels
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
@@ -345,6 +204,14 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
     print("Total time: " + str(end_time - start_time))
     return predictions
 
+def determine_most_important_features(likelihood_probabilities):
+    # take the sum of each column
+    total_probabilities = likelihood_probabilities.sum(axis=0)
+    # indices of top 1000 totals
+    ind_total_prob = np.argpartition(total_probabilities, -60000)[-60000:]
+    print(len(ind_total_prob))
+    print(ind_total_prob)
+    return ind_total_prob
 
 # determine_total_words_in_classes()
 # Calculating how many total words are in each classification.
@@ -432,6 +299,164 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
+
+# logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
+# Trains using Gradient descent
+def logistic_regression_solution(X_train, X_validation, test_data):
+    likelihood_probabilities, prior_probabilities = nb_train(X_train, 0.001)
+    array_of_most_imp_features = determine_most_important_features(likelihood_probabilities)
+
+    spliced_X_train = scipy.sparse.csr_matrix(X_train.tocsc()[:, array_of_most_imp_features])
+    spliced_X_validation= scipy.sparse.csr_matrix(X_validation.tocsc()[:, array_of_most_imp_features])
+    print(spliced_X_train.shape)
+
+    # separate features and classifications
+    X_train_data = spliced_X_train[:, :-1]
+    X_train_classifications = X_train[:, -1:]
+
+    X_validation_data = spliced_X_validation[:, :-1]
+    X_validation_classification = X_validation[:, -1:]
+
+    # TODO: figure out dimensionality reduction techinique
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
+    #
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))
+
+    # train/learn the weights for the matrix W
+    W = logisic_reg_train(X_train_data, X_train_classifications)
+
+    # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
+    column_of_ones = np.full((X_validation.shape[0], 1), 1)
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
+
+    # same thing but use test data instead
+    # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
+
+    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
+    X = normalize_columns(X)
+
+    # will return the labels on the validation data, will also print our accuracy
+    log_reg_predict(X, W, X_validation_classification, "validation")
+
+    # labels = log_reg_predict(X, W, None, "testing")
+    # if predicting on test
+    # output_predictions("log_reg_testdata_output.csv", labels, 12001)
+
+# logisic_reg_train: Logistic reg. implementation using Gradient Descent to find the matrix W
+# that maximizes the probabilty we predict the correct class Y given features X
+# This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
+def logisic_reg_train(X_train, Y):
+
+    # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
+    print("Shape of input: " + str(X_train.shape))
+    learning_rate = 0.0001
+    print("Learning rate: " + str(learning_rate))
+    num_of_training_iterations = 1
+    print("Num of training iterations: " + str(num_of_training_iterations))
+    lambda_regularization = 0
+    print("Lambda regularization value: " + str(lambda_regularization))
+
+    # num of examples
+    m = X_train.shape[0]
+    # num of classes
+    k = 20
+    # num of features
+    n = X_train.shape[1]
+
+    # (num_of_classes, num_of_examples) -> (m, k) matrix, where the entry delta,ij = 1 if for that example j the class is i
+    delta = np.zeros((k, m))
+    delta = scipy.sparse.csr_matrix(initialize_delta(delta, Y))
+
+    # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
+    column_of_ones = np.full((m, 1), 1)
+    print(X_train.shape)
+    print(type(X_train))
+
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
+    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
+    X = normalize_columns(X)
+
+    # Weights for calculating conditional probability, initialized as all 0
+    #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
+    W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
+
+    for i in range(num_of_training_iterations):
+        print("iteration" + str(i))
+        # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
+        Z = (W.dot(X.transpose())).expm1()
+        # Z.data = Z.data + 1
+        # gradient w.r.t. Weights with regularization
+        dZ = ((delta - Z) * X) - (lambda_regularization * W)
+        # learning rule
+        W = W + (learning_rate * dZ)
+
+        # make predictions training data for each iteration, this adds min. time as the heaviest thing is normalizing
+        #log_reg_predict(X, W, Y, "training")
+
+    # return matrix of weights to use for predictions
+    return W
+
+# Set index equal to 1 if it's the same index as the class , 0 for all other classes, (Dirac Delta function)
+# returns a matrix based on Dirac Delta function
+def initialize_delta(delta, Y):
+    Y_values = Y.data
+    current_example = 0
+
+    # go through each examples classification and index into the matrix delta and set that indice to 1
+    # need to subtract 1 from the label because labels are 1-indexed
+    for label in Y_values:
+        # for class label on the current example, set index = 1
+        delta[label-1, current_example] = 1
+        current_example += 1
+
+    return delta
+
+# normalize_columns: takes the sum of every column and divides the nonzero data for a feature
+# by that features summation
+ # TODO: study python broadcasting...
+def normalize_columns(Z):
+
+    # take the sum of each column
+    column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
+    row_indices, col_indices = Z.nonzero()
+    Z.data /= column_sums[col_indices]  #TODO: this is wild
+
+    return Z
+
+# log_reg_predict: returns the predictions for the given data X. These predictions were
+# learned by the weight matrix W which we trained using GD in logisic_reg_train
+# Also prints the accuracy for the given data
+def log_reg_predict(X, W, Y, predictions_on = "Training"):
+    predictions = (W.dot(X.transpose())).expm1()
+    predictions = predictions.toarray()
+
+    max_value = -math.inf
+    max_index = -1
+    labels = []
+
+    # for every example
+    for j in range(predictions.shape[1]):
+        for i in range(20):
+            #print(str(i) + " : " + str(predictions[i][j]))
+            if predictions[i][j] > max_value:
+                max_value = predictions[i][j]
+                max_index = i+1
+        labels.append(max_index)
+        # print("")
+        max_value = -math.inf
+        max_index = -1
+
+    if Y != None:
+        accuracy = 0
+        for i in range(len(labels)):
+            if labels[i] == Y[i]:
+                accuracy += 1
+        accuracy /= len(labels)
+    print(accuracy)
+
+    return labels
 
 # output_predictions()
 # Outputs the predictions from classification and outputs them into a file.
