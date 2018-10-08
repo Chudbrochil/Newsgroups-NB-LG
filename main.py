@@ -35,9 +35,9 @@ def main():
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
     """ If you want to solve the problem with naive bayes """
-    #naive_bayes_solution(X_train, X_validation, test_data)
+    naive_bayes_solution(X_train, X_validation, test_data)
 
-    logistic_regression_solution(X_train, X_validation, test_data)
+    #logistic_regression_solution(X_train, X_validation, test_data)
 
 # naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
 def naive_bayes_solution(X_train, X_validation, test_data):
@@ -48,8 +48,8 @@ def naive_bayes_solution(X_train, X_validation, test_data):
 
     # Ugly parameter tuning search
     # beta is the term for Laplace smoothing
-    betas = [.00001, .0001, .001, .01, .1, 1]
-    #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
+    #betas = [.00001, .0001, .001, .01, .1, 1]
+    betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     accuracies = []
 
     # Go through and train on each beta
@@ -106,8 +106,6 @@ def nb_train(data, beta):
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def nb_predict(data, prior_probabilities, likelihood_probabilities):
-
-    print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
 
     log_priors = []
     for value in prior_probabilities.values():
