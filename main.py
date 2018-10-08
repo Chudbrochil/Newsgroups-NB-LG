@@ -23,15 +23,6 @@ import matplotlib.pyplot as plt
 """
 
 num_of_classes = 20
-array_of_most_imp_features = [130, 573, 1575, 1022, 1017,  455,  2044,   833,   367,   491,   392,   920,
-232,   234,   238,   244,   250,   281,   294,   159,   296,   298,   300,   143,
-142,   141,   303,   138,   306,   136,   311,   313,   339,   387,   437,   457,
-465,   121,   466,   472,   473,   475,   476,   103,  1029,   530,    99, 98,
-1027,  1014,  1318,   629,   643,  1002,   994,   662,   721,    82,   747, 80,
-79,   748,   977,    72,    71,   765,   769,    66,   774,    59,   777,   968,
-791,    51,    50,   812,    48,    47,   822,   941,    43,    41,   827,   929,
-32,   849,   862,    29,    28,   876,    26,    24,    22,   885,    15,   901,
-11,   921,   911, 61188]
 
 def main():
 
@@ -44,9 +35,9 @@ def main():
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
     """ If you want to solve the problem with naive bayes """
-    naive_bayes_solution(X_train, X_validation, test_data)
+    #naive_bayes_solution(X_train, X_validation, test_data)
 
-    #logistic_regression_solution(X_train, X_validation, test_data)
+    logistic_regression_solution(X_train, X_validation, test_data)
 
 # naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
 def naive_bayes_solution(X_train, X_validation, test_data):
@@ -84,6 +75,7 @@ def naive_bayes_solution(X_train, X_validation, test_data):
     plt.semilogx(betas, accuracies, linewidth=2.0)
     plt.xlabel('Beta')
     plt.ylabel('Accuracy')
+    plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
     output_predictions("validation_output.csv", best_validation_predictions, X_train.shape[0])
@@ -115,11 +107,7 @@ def nb_train(data, beta):
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def nb_predict(data, prior_probabilities, likelihood_probabilities):
 
-    start_time = time.time()
-
     print("Classifying: %d examples, %d features." % (length_of_examples, length_of_features))
-
-    length_of_nonzero_test_data = len(nonzero_test_data[0])
 
     log_priors = []
     for value in prior_probabilities.values():
@@ -145,10 +133,6 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
         predictions.append(index + 1)
     print("Predictions shape: " + str(np.array(predictions).shape))
 
-    #print("Dictionary of predictions")
-    #print(predictions)
-    end_time = time.time()
-    print("Total time: " + str(end_time - start_time))
     return predictions
 
 def determine_most_important_features(likelihood_probabilities):
@@ -300,9 +284,9 @@ def logisic_reg_train(X_train, Y):
     print("Shape of input: " + str(X_train.shape))
     learning_rate = 0.0001
     print("Learning rate: " + str(learning_rate))
-    num_of_training_iterations = 1
+    num_of_training_iterations = 1000
     print("Num of training iterations: " + str(num_of_training_iterations))
-    lambda_regularization = 0
+    lambda_regularization = .1
     print("Lambda regularization value: " + str(lambda_regularization))
 
     # num of examples
