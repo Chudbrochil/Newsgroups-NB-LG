@@ -78,7 +78,7 @@ def naive_bayes_solution(X_train, X_validation, test_data):
     plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
-    output_predictions("validation_output.csv", best_validation_predictions, X_train.shape[0])
+    output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
