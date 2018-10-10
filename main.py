@@ -27,20 +27,30 @@ num_of_classes = 20
 def main():
 
     # Loads in a sparse matrix (csr_matrix) from a npz file.
-    data = scipy.sparse.load_npz("training_sparse.npz")
+    training_data = scipy.sparse.load_npz("training_sparse.npz")
 
     # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
-    # Splits our data into training data and validation data.
-    X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
-    nb_tuning(X_train, X_validation, test_data)
+
+    # Tuning our naive bayes' given a range of Beta variables.
+    # TODO: Write an if statement that can be used here at the command line
+    # to do tuning or testing solution.
+    # TODO: We could pass in the beta variables/range from main....
+
+    # Splits our data into training data and validation data.
+    #X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+    #nb_tuning(X_train, X_validation, test_data)
 
     # TODO: Write Naive Bayes solution for testing data. Should be a tiny
     # method that trains, predicts and outputs.
 
     #logistic_regression_solution(X_train, X_validation, test_data)
+
+    nb_solve(training_data, test_data)
+
+
 
 # nb_tuning()
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
@@ -82,6 +92,15 @@ def nb_tuning(X_train, X_validation, test_data):
     plt.show()
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
+
+# nb_solve()
+# Training our naive bayes' algorithm against our full set of training data and
+# then getting predictions on testing data and then outputting that to a file.
+def nb_solve(training_data, testing_data):
+    beta = .01 # TODO: Hard-coded beta for now.
+    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
+    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities)
+    output_predictions("testing_predictions.csv", predictions, training_data.shape[0])
 
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
