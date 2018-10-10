@@ -4,9 +4,30 @@ import numpy as np
 import scipy.sparse
 from sklearn.decomposition import TruncatedSVD
 
+# lr_solve()
+# Trains logistic regression against some training data and then outputs predictions
+# for some given testing data. Learning rate, penalty and num. of iterations
+# are all tunable variables but they are hard-coded in main.
+def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
+    training_data_no_classifications = training_data[:, :-1]
+    training_data_classifications = training_data[:, -1:]
+
+    W = lr_train(training_data_no_classifications, training_data_classifications)
+
+    column_of_ones = np.full((test_data.shape[0], 1), 1)
+    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
+
+    X = normalize_columns(X)
+
+    predictions = lr_predict(X, W, None)
+
+    util.output_predictions("log_reg_output.csv", predictions, 12001)
+
+
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descent
-def logistic_regression_solution(X_train, X_validation, test_data):
+def lr_tuning(X_train, X_validation):
+
     classes = util.load_classes("newsgrouplabels.txt")
 
     # separate features and classifications
@@ -16,15 +37,8 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
 
-    # TODO: figure out dimensionality reduction techinique
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
-    #
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))
-
     # train/learn the weights for the matrix W
-    W = logisic_reg_train(X_train_data, X_train_classifications)
+    W = lr_train(X_train_data, X_train_classifications)
 
     # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
     column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -38,7 +52,7 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     X = normalize_columns(X)
 
     # will return the labels on the validation data, will also print our accuracy
-    predictions = log_reg_predict(X, W, X_validation_classification, "validation")
+    predictions = lr_predict(X, W, X_validation_classification)
 
     util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
@@ -46,18 +60,18 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     # if predicting on test
     # output_predictions("log_reg_testdata_output.csv", labels, 12001)
 
-# logisic_reg_train: Logistic reg. implementation using Gradient Descent to find the matrix W
+# lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
 # This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
-def logisic_reg_train(X_train, Y):
+def lr_train(X_train, Y):
 
     # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
     print("Shape of input: " + str(X_train.shape))
-    learning_rate = 0.0001
+    learning_rate = 0.05 # .001 best
     print("Learning rate: " + str(learning_rate))
     num_of_training_iterations = 1
     print("Num of training iterations: " + str(num_of_training_iterations))
-    lambda_regularization = .1
+    lambda_regularization = .01 # .1 best
     print("Lambda regularization value: " + str(lambda_regularization))
 
     # num of examples
@@ -74,7 +88,6 @@ def logisic_reg_train(X_train, Y):
     # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
     column_of_ones = np.full((m, 1), 1)
     print(X_train.shape)
-    print(type(X_train))
 
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
     # normalize the features (sum each column up and divide each nonzero element by that columns sum)
@@ -131,7 +144,7 @@ def normalize_columns(Z):
 # log_reg_predict: returns the predictions for the given data X. These predictions were
 # learned by the weight matrix W which we trained using GD in logisic_reg_train
 # Also prints the accuracy for the given data
-def log_reg_predict(X, W, Y, predictions_on = "Training"):
+def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
     predictions = predictions.toarray()
 
@@ -157,6 +170,15 @@ def log_reg_predict(X, W, Y, predictions_on = "Training"):
             if labels[i] == Y[i]:
                 accuracy += 1
         accuracy /= len(labels)
-    print(accuracy)
+        print(accuracy)
 
     return labels
+
+
+
+    # TODO: figure out dimensionality reduction techinique
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
+    #
+    # truncated_SVD = TruncatedSVD(n_components = 50)
+    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))
