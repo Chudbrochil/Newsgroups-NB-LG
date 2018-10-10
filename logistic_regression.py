@@ -1,22 +1,18 @@
 import utilities as util
 import math
+import numpy as np
+import scipy.sparse
 from sklearn.decomposition import TruncatedSVD
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descent
 def logistic_regression_solution(X_train, X_validation, test_data):
-    likelihood_probabilities, prior_probabilities = nb_train(X_train, 0.001)
-    array_of_most_imp_features = determine_most_important_features(likelihood_probabilities)
-
-    spliced_X_train = scipy.sparse.csr_matrix(X_train.tocsc()[:, array_of_most_imp_features])
-    spliced_X_validation= scipy.sparse.csr_matrix(X_validation.tocsc()[:, array_of_most_imp_features])
-    print(spliced_X_train.shape)
 
     # separate features and classifications
-    X_train_data = spliced_X_train[:, :-1]
+    X_train_data = X_train[:, :-1]
     X_train_classifications = X_train[:, -1:]
 
-    X_validation_data = spliced_X_validation[:, :-1]
+    X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
 
     # TODO: figure out dimensionality reduction techinique
@@ -43,7 +39,7 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     # will return the labels on the validation data, will also print our accuracy
     predictions = log_reg_predict(X, W, X_validation_classification, "validation")
 
-    confusion_matrix = build_confusion_matrix(predictions, X_validation_classification)
+    confusion_matrix = util.build_confusion_matrix(predictions, X_validation_classification)
     np.savetxt("logisticregression_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
 
     # labels = log_reg_predict(X, W, None, "testing")

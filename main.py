@@ -1,7 +1,6 @@
 import naive_bayes as nb
 import logistic_regression as lr
 import scipy.sparse
-import copy
 from sklearn.model_selection import train_test_split
 
 """
@@ -22,7 +21,7 @@ def main():
     training_data = scipy.sparse.load_npz("training_sparse.npz")
 
     # TODO: TOP LEVEL VARIABLES, WILL BECOME CLI OPTIONS
-    use_naive_bayes = True # False means using Logistic Regression
+    use_naive_bayes = False # False means using Logistic Regression
     is_tuning = False # False means we are running against testing data
 
     # Splits our data into training data and validation data.
