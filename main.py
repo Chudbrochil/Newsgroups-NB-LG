@@ -102,7 +102,7 @@ def nb_solve(training_data, testing_data):
     beta = .01 # TODO: Hard-coded beta for now.
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
-    output_predictions("testing_predictions.csv", predictions, training_data.shape[0])
+    output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
