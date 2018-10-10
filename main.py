@@ -23,7 +23,7 @@ def main():
 
     # TODO: TOP LEVEL VARIABLES, WILL BECOME CLI OPTIONS
     use_naive_bayes = True # False means using Logistic Regression
-    is_tuning = False # False means we are running against testing data
+    is_tuning = True # False means we are running against testing data
 
     # Splits our data into training data and validation data.
     X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
