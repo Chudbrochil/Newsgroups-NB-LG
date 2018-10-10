@@ -72,7 +72,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     #num_of_training_iterations = 1
     print("Num of iterations: " + str(num_of_iterations))
     #lambda_regularization = .01 # .1 best
-    print("Lambda regularization value: " + str(lambda_regularization))
+    print("Lambda regularization value: " + str(penalty_term))
 
     # num of examples
     m = X_train.shape[0]
@@ -98,13 +98,13 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
     # TODO: Make the weight matrix here random, then in for loop we have to normalize.
 
-    for i in range(num_of_training_iterations):
+    for i in range(num_of_iterations):
         print("iteration" + str(i))
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
         # Z.data = Z.data + 1
         # gradient w.r.t. Weights with regularization
-        dZ = ((delta - Z) * X) - (lambda_regularization * W)
+        dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
         W = W + (learning_rate * dZ)
 
