@@ -29,43 +29,35 @@ def main():
     # Loads in a sparse matrix (csr_matrix) from a npz file.
     training_data = scipy.sparse.load_npz("training_sparse.npz")
 
+    # TODO: TOP LEVEL VARIABLES, WILL BECOME CLI OPTIONS
+    use_naive_bayes = True # False means using Logistic Regression
+    is_tuning = True # False means we are running against testing data
+
     # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
-
-
-    # Tuning our naive bayes' given a range of Beta variables.
-
-    # TODO: We could pass in the beta variables/range from main....
-
-    # Splits our data into training data and validation data.
-    #X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
-
-    # TODO: Write an if statement that can be used here at the command line
-    # to do tuning or testing solution.
-    #nb_tuning(X_train, X_validation, test_data)
-
-    # TODO: Write Naive Bayes solution for testing data. Should be a tiny
-    # method that trains, predicts and outputs.
-
-    #logistic_regression_solution(X_train, X_validation, test_data)
-
-    nb_solve(training_data, test_data)
-
+    if use_naive_bayes == True and is_tuning == True:
+        # Splits our data into training data and validation data.
+        X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+        # Tuning our naive bayes' given a range of Beta variables.
+        betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
+        nb_tuning(X_train, X_validation,, betas)
+    elif use_naive_bayes == True and is_tuning == False:
+        # Run Naive Bayes' against the testing data, no validation dataset.
+        nb_solve(training_data, test_data)
+    elif use_naive_bayes == False: # No tuning for logistic regression yet.
+        logistic_regression_solution(X_train, X_validation, test_data)
 
 
 # nb_tuning()
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
 # data set when it is done running.
-def nb_tuning(X_train, X_validation, test_data):
+def nb_tuning(X_train, X_validation):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
     X_validation_classification = X_validation[:, -1:]
-
-    # Beta is the tuning term for Laplace smoothing
-    betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     accuracies = []
 
     # Go through and train on each beta
