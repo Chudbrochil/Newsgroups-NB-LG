@@ -36,47 +36,24 @@ def main():
     # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
-<<<<<<< HEAD
     if use_naive_bayes == True and is_tuning == True:
         # Splits our data into training data and validation data.
         X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
         # Tuning our naive bayes' given a range of Beta variables.
         betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
-        nb_tuning(X_train, X_validation,, betas)
+        nb_tuning(X_train, X_validation, betas)
     elif use_naive_bayes == True and is_tuning == False:
         # Run Naive Bayes' against the testing data, no validation dataset.
         nb_solve(training_data, test_data)
     elif use_naive_bayes == False: # No tuning for logistic regression yet.
         logistic_regression_solution(X_train, X_validation, test_data)
-=======
-
-
-    # Tuning our naive bayes' given a range of Beta variables.
-
-    # TODO: We could pass in the beta variables/range from main....
-
-    # Splits our data into training data and validation data.
-    X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
-
-    # TODO: Write an if statement that can be used here at the command line
-    # to do tuning or testing solution.
-    nb_tuning(X_train, X_validation, test_data)
-
-    # TODO: Write Naive Bayes solution for testing data. Should be a tiny
-    # method that trains, predicts and outputs.
-
-    #logistic_regression_solution(X_train, X_validation, test_data)
-
-    #nb_solve(training_data, test_data)
-
->>>>>>> abe1bf78bf987cf7641ede8c8cc0f2a3e86aea57
 
 
 # nb_tuning()
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
 # data set when it is done running.
-def nb_tuning(X_train, X_validation):
+def nb_tuning(X_train, X_validation, betas):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
