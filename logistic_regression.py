@@ -12,7 +12,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     training_data_no_classifications = training_data[:, :-1]
     training_data_classifications = training_data[:, -1:]
 
-    W = lr_train(training_data_no_classifications, training_data_classifications)
+    W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations)
 
     column_of_ones = np.full((test_data.shape[0], 1), 1)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
@@ -63,21 +63,21 @@ def lr_tuning(X_train, X_validation):
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
 # This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
-def lr_train(X_train, Y):
+def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
     # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
     print("Shape of input: " + str(X_train.shape))
-    learning_rate = 0.05 # .001 best
+    #learning_rate = 0.05 # .001 best
     print("Learning rate: " + str(learning_rate))
-    num_of_training_iterations = 1
-    print("Num of training iterations: " + str(num_of_training_iterations))
-    lambda_regularization = .01 # .1 best
+    #num_of_training_iterations = 1
+    print("Num of iterations: " + str(num_of_iterations))
+    #lambda_regularization = .01 # .1 best
     print("Lambda regularization value: " + str(lambda_regularization))
 
     # num of examples
     m = X_train.shape[0]
     # num of classes
-    k = 20
+    k = 20 # TODO: Hard coded variable (num_of_classes)
     # num of features
     n = X_train.shape[1]
 
