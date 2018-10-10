@@ -36,6 +36,7 @@ def main():
     # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
+<<<<<<< HEAD
     if use_naive_bayes == True and is_tuning == True:
         # Splits our data into training data and validation data.
         X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
@@ -47,6 +48,28 @@ def main():
         nb_solve(training_data, test_data)
     elif use_naive_bayes == False: # No tuning for logistic regression yet.
         logistic_regression_solution(X_train, X_validation, test_data)
+=======
+
+
+    # Tuning our naive bayes' given a range of Beta variables.
+
+    # TODO: We could pass in the beta variables/range from main....
+
+    # Splits our data into training data and validation data.
+    X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+
+    # TODO: Write an if statement that can be used here at the command line
+    # to do tuning or testing solution.
+    nb_tuning(X_train, X_validation, test_data)
+
+    # TODO: Write Naive Bayes solution for testing data. Should be a tiny
+    # method that trains, predicts and outputs.
+
+    #logistic_regression_solution(X_train, X_validation, test_data)
+
+    #nb_solve(training_data, test_data)
+
+>>>>>>> abe1bf78bf987cf7641ede8c8cc0f2a3e86aea57
 
 
 # nb_tuning()
@@ -255,11 +278,13 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
 def build_confusion_matrix(predictions, true_classes):
     confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
     len_pred = len(predictions)
-
+    true_classes = true_classes.data
+    print(predictions[0])
+    print(true_classes[0])
     # for every class prediction and true class value
     for i in range(len_pred):
         # we hope that these two are equal for a strong diagonal correlation
-        confusion_matrix[predictions[i]][true_classes[i]] += 1
+        confusion_matrix[predictions[i]-1, true_classes[i]-1] += 1
 
     print(confusion_matrix)
     return confusion_matrix
