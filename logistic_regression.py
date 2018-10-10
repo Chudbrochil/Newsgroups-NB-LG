@@ -28,6 +28,8 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 # Trains using Gradient descent
 def lr_tuning(X_train, X_validation):
 
+    classes = util.load_classes("newsgrouplabels.txt")
+
     # separate features and classifications
     X_train_data = X_train[:, :-1]
     X_train_classifications = X_train[:, -1:]
@@ -52,9 +54,7 @@ def lr_tuning(X_train, X_validation):
     # will return the labels on the validation data, will also print our accuracy
     predictions = lr_predict(X, W, X_validation_classification)
 
-    # TODO: Temporarily not printing the confusion matrix
-    #confusion_matrix = util.build_confusion_matrix(predictions, X_validation_classification)
-    #np.savetxt("logisticregression_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
+    util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
