@@ -1,7 +1,6 @@
 import naive_bayes as nb
 import logistic_regression as lr
 import scipy.sparse
-import copy
 from sklearn.model_selection import train_test_split
 
 """
