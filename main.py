@@ -33,12 +33,13 @@ def main():
     use_naive_bayes = True # False means using Logistic Regression
     is_tuning = True # False means we are running against testing data
 
+    X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+
     # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
     if use_naive_bayes == True and is_tuning == True:
         # Splits our data into training data and validation data.
-        X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
         # Tuning our naive bayes' given a range of Beta variables.
         betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
         nb_tuning(X_train, X_validation, betas)
@@ -69,6 +70,8 @@ def nb_tuning(X_train, X_validation, betas):
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
         confusion_matrix = build_confusion_matrix(predictions, X_validation_classification)
+        np.savetxt("naivebayes_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
+
         accuracy = 0
         for i in range(X_validation.shape[0]):
             if(predictions[i] == X_validation_classification[i]):
@@ -305,7 +308,10 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     X = normalize_columns(X)
 
     # will return the labels on the validation data, will also print our accuracy
-    log_reg_predict(X, W, X_validation_classification, "validation")
+    predictions = log_reg_predict(X, W, X_validation_classification, "validation")
+
+    confusion_matrix = build_confusion_matrix(predictions, X_validation_classification)
+    np.savetxt("logisticregression_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
@@ -320,7 +326,7 @@ def logisic_reg_train(X_train, Y):
     print("Shape of input: " + str(X_train.shape))
     learning_rate = 0.0001
     print("Learning rate: " + str(learning_rate))
-    num_of_training_iterations = 1000
+    num_of_training_iterations = 1
     print("Num of training iterations: " + str(num_of_training_iterations))
     lambda_regularization = .1
     print("Lambda regularization value: " + str(lambda_regularization))
