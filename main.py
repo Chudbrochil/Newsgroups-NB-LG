@@ -76,6 +76,7 @@ def nb_tuning(X_train, X_validation, test_data):
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
+        confusion_matrix = build_confusion_matrix(predictions, X_validation_classification)
         accuracy = 0
         for i in range(X_validation.shape[0]):
             if(predictions[i] == X_validation_classification[i]):
@@ -258,6 +259,19 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
             likelihood_matrix[x][y] = enhanced_likelihood
 
     return likelihood_matrix
+
+def build_confusion_matrix(predictions, true_classes):
+    confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
+    len_pred = len(predictions)
+
+    # for every class prediction and true class value
+    for i in range(len_pred):
+        # we hope that these two are equal for a strong diagonal correlation
+        confusion_matrix[predictions[i]][true_classes[i]] += 1
+
+    print(confusion_matrix)
+    return confusion_matrix
+
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descent
