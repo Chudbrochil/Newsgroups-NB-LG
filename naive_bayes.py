@@ -1,5 +1,6 @@
 import utilities as util
 import numpy as np
+import pandas as pd
 import math
 import matplotlib.pyplot as plt
 
@@ -13,6 +14,7 @@ num_of_classes = 20 # TODO: Remove this global
 def nb_tuning(X_train, X_validation, betas):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
+    classes = util.load_classes("newsgrouplabels.txt")
 
     X_validation_classification = X_validation[:, -1:]
     accuracies = []
@@ -25,8 +27,7 @@ def nb_tuning(X_train, X_validation, betas):
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
-        confusion_matrix = util.build_confusion_matrix(predictions, X_validation_classification)
-        np.savetxt("naivebayes_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
+        util.build_confusion_matrix(predictions, X_validation_classification, classes, "naive_bayes_confusionMatrix.csv")
 
         accuracy = 0
         for i in range(X_validation.shape[0]):
