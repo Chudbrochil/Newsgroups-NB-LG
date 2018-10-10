@@ -45,7 +45,7 @@ def nb_tuning(X_train, X_validation, betas):
     plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
-    output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
 
 # nb_solve()
@@ -54,7 +54,7 @@ def nb_tuning(X_train, X_validation, betas):
 def nb_solve(training_data, testing_data, beta):
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
-    output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
+    util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
 
 # determine_total_words_in_classes()

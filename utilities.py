@@ -3,6 +3,10 @@ import numpy as np
 num_of_classes = 20 # TODO: Remove this, we can run load_classes()
 
 
+# build_confusion_matrix()
+# Builds the confusion matrix for either naive bayes' or logistic regression.
+# Our goal is to have a strong diagonal which corresponds to good correlation
+# between validation data classifications and our predictions.
 def build_confusion_matrix(predictions, true_classes):
     confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
     len_pred = len(predictions)
