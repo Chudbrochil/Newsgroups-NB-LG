@@ -35,12 +35,14 @@ def main():
 
 
     # Tuning our naive bayes' given a range of Beta variables.
-    # TODO: Write an if statement that can be used here at the command line
-    # to do tuning or testing solution.
+
     # TODO: We could pass in the beta variables/range from main....
 
     # Splits our data into training data and validation data.
     #X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+
+    # TODO: Write an if statement that can be used here at the command line
+    # to do tuning or testing solution.
     #nb_tuning(X_train, X_validation, test_data)
 
     # TODO: Write Naive Bayes solution for testing data. Should be a tiny
@@ -100,7 +102,7 @@ def nb_tuning(X_train, X_validation, test_data):
 def nb_solve(training_data, testing_data):
     beta = .01 # TODO: Hard-coded beta for now.
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
-    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities)
+    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
     output_predictions("testing_predictions.csv", predictions, training_data.shape[0])
 
 # nb_train()
@@ -129,7 +131,7 @@ def nb_train(data, beta):
 # Calculates the prediction function for Naive Bayes
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
-def nb_predict(data, prior_probabilities, likelihood_probabilities):
+def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing = False):
 
     log_priors = []
     for value in prior_probabilities.values():
@@ -137,6 +139,11 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities):
         log_priors.append(log_value)
 
     likelihood_probabilities.data = np.log(likelihood_probabilities.data)
+
+    if is_testing == True:
+        # TODO: Chop off the last column, Why do we have to do this?
+        likelihood_probabilities = np.delete(likelihood_probabilities, -1, axis=1)
+
     # gives matrix of (examples, classes)
     print(likelihood_probabilities.shape)
     print(data.shape)
