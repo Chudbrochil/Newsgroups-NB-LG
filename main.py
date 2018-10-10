@@ -26,29 +26,33 @@ num_of_classes = 20
 
 def main():
 
-    #this should load in a csr_matrix
+    # Loads in a sparse matrix (csr_matrix) from a npz file.
     data = scipy.sparse.load_npz("training_sparse.npz")
-    # Loading the testing data, getting our predictions, and then outputting them.
+
+    # Loading the testing data from an npz file also.
     test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
-    # can set shuffle to True, will still work
+    # Splits our data into training data and validation data.
     X_train, X_validation = train_test_split(data, test_size = .2, shuffle = True)
 
-    """ If you want to solve the problem with naive bayes """
-    naive_bayes_solution(X_train, X_validation, test_data)
+    nb_tuning(X_train, X_validation, test_data)
+
+    # TODO: Write Naive Bayes solution for testing data. Should be a tiny
+    # method that trains, predicts and outputs.
 
     #logistic_regression_solution(X_train, X_validation, test_data)
 
-# naive_bayes_solution: preprocessing and steps needed to use the naive bayes alg
-def naive_bayes_solution(X_train, X_validation, test_data):
+# nb_tuning()
+# Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
+# algorithm for each of these Beta variables and then plot accuracy vs. the validation
+# data set when it is done running.
+def nb_tuning(X_train, X_validation, test_data):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
     X_validation_classification = X_validation[:, -1:]
 
-    # Ugly parameter tuning search
-    # beta is the term for Laplace smoothing
-    #betas = [.00001, .0001, .001, .01, .1, 1]
+    # Beta is the tuning term for Laplace smoothing
     betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     accuracies = []
 
@@ -68,10 +72,9 @@ def naive_bayes_solution(X_train, X_validation, test_data):
         print("Accuracy on validation set with beta "  + str(beta) + " : "+ str(accuracy))
         accuracies.append(accuracy)
 
-
+    # Generating plots for beta variable vs. accuracy on validation data.
     print(betas)
     print(accuracies)
-    # plot on x log scale
     plt.semilogx(betas, accuracies, linewidth=2.0)
     plt.xlabel('Beta')
     plt.ylabel('Accuracy')
@@ -80,6 +83,10 @@ def naive_bayes_solution(X_train, X_validation, test_data):
 
     output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
+# nb_train()
+# Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
+# This method will bring in a set of data (training data, typically separated from
+# validation data), and a Beta tuning variable.
 def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
@@ -95,9 +102,6 @@ def nb_train(data, beta):
 
     # pass the dataset except the classifications
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta)
-
-    # Making sure we can classify our training data correctly.
-    #classify_data(data[:1, :-1], prior_probabilities, likelihood_probabilities)
 
     return likelihood_probabilities, prior_probabilities
 
@@ -259,6 +263,7 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
     column_of_ones = np.full((X_validation.shape[0], 1), 1)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
+    # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
 
     # same thing but use test data instead
     # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
@@ -310,6 +315,7 @@ def logisic_reg_train(X_train, Y):
     # Weights for calculating conditional probability, initialized as all 0
     #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
     W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
+    # TODO: Make the weight matrix here random, then in for loop we have to normalize.
 
     for i in range(num_of_training_iterations):
         print("iteration" + str(i))
