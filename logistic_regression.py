@@ -7,6 +7,7 @@ from sklearn.decomposition import TruncatedSVD
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descent
 def logistic_regression_solution(X_train, X_validation, test_data):
+    classes = util.load_classes("newsgrouplabels.txt")
 
     # separate features and classifications
     X_train_data = X_train[:, :-1]
@@ -39,8 +40,7 @@ def logistic_regression_solution(X_train, X_validation, test_data):
     # will return the labels on the validation data, will also print our accuracy
     predictions = log_reg_predict(X, W, X_validation_classification, "validation")
 
-    confusion_matrix = util.build_confusion_matrix(predictions, X_validation_classification)
-    np.savetxt("logisticregression_confusion_matrix.csv", confusion_matrix, delimiter=",", fmt='%10.5f')
+    util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
