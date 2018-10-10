@@ -44,7 +44,7 @@ def main():
         nb_tuning(X_train, X_validation, betas)
     elif use_naive_bayes == True and is_tuning == False:
         # Run Naive Bayes' against the testing data, no validation dataset.
-        nb_solve(training_data, test_data)
+        nb_solve(training_data, test_data, .01)
     elif use_naive_bayes == False: # No tuning for logistic regression yet.
         logistic_regression_solution(X_train, X_validation, test_data)
 
@@ -91,8 +91,7 @@ def nb_tuning(X_train, X_validation, betas):
 # nb_solve()
 # Training our naive bayes' algorithm against our full set of training data and
 # then getting predictions on testing data and then outputting that to a file.
-def nb_solve(training_data, testing_data):
-    beta = .01 # TODO: Hard-coded beta for now.
+def nb_solve(training_data, testing_data, beta):
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
     output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
