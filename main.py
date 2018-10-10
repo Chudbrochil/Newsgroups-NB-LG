@@ -14,7 +14,6 @@ from sklearn.model_selection import train_test_split
         - SciPy 1.0.0 (loading the npz format as a csr_matrix) or higher
 """
 
-
 def main():
 
     # Loads in a sparse matrix (csr_matrix) from a npz file.
@@ -37,8 +36,11 @@ def main():
     elif use_naive_bayes == True and is_tuning == False:
         # Run Naive Bayes' against the testing data, no validation dataset.
         nb.nb_solve(training_data, test_data, .01)
-    elif use_naive_bayes == False: # No tuning for logistic regression yet.
-        lr.logistic_regression_solution(X_train, X_validation, test_data)
+    elif use_naive_bayes == False and is_tuning == True:
+        # Tuning Logistic Regression using a range of eta and lambda.
+        lr.lr_tuning(X_train, X_validation)
+    elif use_naive_bayes == False and is_tuning == False:
+        lr.lr_solve(training_data, test_data, .05, .01, 10)
 
 
 def determine_most_important_features(likelihood_probabilities):
