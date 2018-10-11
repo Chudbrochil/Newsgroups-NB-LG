@@ -58,7 +58,7 @@ def lr_tuning(X_train, X_validation):
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 5) # TODO: 1 iteration for now...
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1) # TODO: 1 iteration for now...
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -98,32 +98,15 @@ def lr_tuning(X_train, X_validation):
     X, Y = np.meshgrid(xi, yi)
     Z = griddata(x, y, z, xi, yi, interp='linear')
 
-    surf = ax.plot_surface(X, Y, Z, rstride = 5, cstride = 5, cmap=cm.jet,
+    surf = ax.plot_surface(X, Y, Z, rstride = 1, cstride = 1, cmap=cm.jet,
                             linewidth=1, antialiased=True)
 
     ax.set_zlim3d(np.min(Z), np.max(Z))
+    ax.set_xlabel('Lambda')
+    ax.set_ylabel('Learning Rate')
+    ax.set_zlabel('Accuracy')
     fig.colorbar(surf)
     plt.show()
-
-    print(accuracy_points)
-
-#     # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
-#     fig = p.figure()#plt.figure()
-#     #ax = plt.axes(projection='3d')
-#     ax = Axes3D(fig)
-#     ax.contour3D(learning_rate_points, penalty_term_points, accuracy_points)
-#     #ax.plot_surface(learning_rate_points, penalty_term_points, accuracy_points, rstride=1,
-# #                    cstride=1, cmap='viridis', edgecolor='none')
-#
-#     ax.set_xlabel('Lambda')
-#     ax.set_ylabel('Learning Rate')
-#     ax.set_zlabel('Accuracy')
-#     fig.add_axes(ax)
-#     #ax.view_init(60,35)
-#     #fig
-#     p.show()
-
-    #contour(learning_rate_points, penalty_term_points, accuracy_points)
 
     print(accuracies)
 
