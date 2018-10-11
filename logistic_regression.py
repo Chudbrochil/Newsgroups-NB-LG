@@ -58,7 +58,7 @@ def lr_tuning(X_train, X_validation):
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1) # TODO: 1 iteration for now...
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1) 
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -87,9 +87,9 @@ def lr_tuning(X_train, X_validation):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    x = [i[0] for i in accuracies]
-    y = [i[1] for i in accuracies]
-    z = [i[2] for i in accuracies]
+    x = [i[0] for i in accuracies] # Gathering lambda values
+    y = [i[1] for i in accuracies] # Gathering eta (learning_rate) values
+    z = [i[2] for i in accuracies] # Gathering accuracy values
 
     # https://stackoverflow.com/questions/4363857/matplotlib-color-in-3d-plotting-from-an-x-y-z-data-set-without-using-contour
     xi = np.linspace(min(x), max(x))
@@ -102,8 +102,8 @@ def lr_tuning(X_train, X_validation):
                             linewidth=1, antialiased=True)
 
     ax.set_zlim3d(np.min(Z), np.max(Z))
-    ax.set_xlabel('Lambda')
-    ax.set_ylabel('Learning Rate')
+    ax.set_xlabel('Learning Rate')
+    ax.set_ylabel('Lambda')
     ax.set_zlabel('Accuracy')
     fig.colorbar(surf)
     plt.show()
@@ -120,7 +120,6 @@ def lr_tuning(X_train, X_validation):
 def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
     # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
-    print("Shape of input: " + str(X_train.shape))
     #learning_rate = 0.05 # .001 best
     print("Learning rate: " + str(learning_rate))
     #num_of_training_iterations = 1
@@ -141,7 +140,6 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
     # append column of 1s to sparse matrix X_train (per PDF and Piazza for something to do with normalization)
     column_of_ones = np.full((m, 1), 1)
-    print(X_train.shape)
 
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_train)), dtype = np.float64)
     # normalize the features (sum each column up and divide each nonzero element by that columns sum)
@@ -201,7 +199,6 @@ def normalize_columns(Z):
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
 
-    print(predictions.shape)
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
     # print(maximum_index_for_each_example)
