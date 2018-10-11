@@ -9,6 +9,8 @@ from sklearn.decomposition import TruncatedSVD
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.mlab import griddata
 
+# only global to avoid chain of returns
+training_column_sums = []
 
 # lr_solve()
 # Trains logistic regression against some training data and then outputs predictions
@@ -23,6 +25,9 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     column_of_ones = np.full((test_data.shape[0], 1), 1)
     # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
+
+    row_indices, col_indices = X.nonzero()
+    Z.data /= training_column_sums[col_indices]  #TODO: this is wild
 
     X = normalize_columns(X)
 
@@ -46,7 +51,7 @@ def lr_tuning(X_train, X_validation):
     # Lists of values we are using for penalty term and learning rate
     # Using 5 terms each which gives 5x5 = 25 data points vs. accuracy.
     # Scaling between 1-10000 num of iterations adds another dimension as well.
-    learning_rate_list = [.001, .0025, .0050, .0075, .01]
+    learning_rate_list = [0.0001, .001, .0025, .0050, .0075, .01]
     penalty_term_list = [.001, .0025, .0050, .0075, .01]
     #learning_rate_list = [.001, .005, .01]
     #penalty_term_list = [.001, .005, .01]
@@ -82,7 +87,7 @@ def lr_tuning(X_train, X_validation):
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
             classes = util.load_classes("newsgrouplabels.txt")
-            util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
 
     fig = plt.figure()
@@ -192,6 +197,7 @@ def normalize_columns(Z):
     column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
     row_indices, col_indices = Z.nonzero()
     Z.data /= column_sums[col_indices]  #TODO: this is wild
+    training_column_sums = column_sums
 
     return Z
 
