@@ -198,6 +198,7 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
+
     print(predictions.shape)
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
