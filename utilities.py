@@ -22,8 +22,18 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
+<<<<<<< HEAD
     #plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
     #plt.show()
+=======
+    plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
+    plt.xticks(np.arange(20), classes, rotation='vertical')
+    plt.yticks(np.arange(20), classes)
+    plt.tick_params(axis='both', labelsize='7')
+    plt.xlabel("True classifications")
+    plt.ylabel("Predicted classifications")
+    plt.show()
+>>>>>>> d5b52c879ff5c152d955e4d78a6611a819f0c1a4
     # confusion_matrix_df.set_index(classes)
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 

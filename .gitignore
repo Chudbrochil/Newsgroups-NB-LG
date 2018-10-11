@@ -1,3 +1,4 @@
 testing.csv
 training.csv
 /__pycache__
+*.csv
