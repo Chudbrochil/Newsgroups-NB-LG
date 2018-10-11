@@ -22,6 +22,9 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
+    #plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
+    #plt.show()
+
     plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
     plt.xticks(np.arange(20), classes, rotation='vertical')
     plt.yticks(np.arange(20), classes)
