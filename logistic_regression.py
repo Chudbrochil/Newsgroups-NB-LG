@@ -167,33 +167,23 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
-    predictions = predictions.toarray()
 
-    max_value = -math.inf
-    max_index = -1
-    labels = []
+    maximum_index_for_each_example = predictions.argmax(axis=1)
 
-    # for every example
-    for j in range(predictions.shape[1]):
-        for i in range(20):
-            #print(str(i) + " : " + str(predictions[i][j]))
-            if predictions[i][j] > max_value:
-                max_value = predictions[i][j]
-                max_index = i+1
-        labels.append(max_index)
-        # print("")
-        max_value = -math.inf
-        max_index = -1
+    predictions = []
+    for index in maximum_index_for_each_example:
+        predictions.append(index + 1)
 
     if Y != None:
+        print("test")
         accuracy = 0
-        for i in range(len(labels)):
-            if labels[i] == Y[i]:
+        for i in range(len(predictions)):
+            if predictions[i] == Y[i]:
                 accuracy += 1
-        accuracy /= len(labels)
-        print(accuracy)
+        accuracy /= len(predictions)
+        print("Accuracy of log reg: " + str(accuracy))
 
-    return labels
+    return predictions
 
 
 
