@@ -3,9 +3,11 @@ import math
 import numpy as np
 import pylab as p
 import scipy.sparse
+from matplotlib import cm
 import matplotlib.pyplot as plt
 from sklearn.decomposition import TruncatedSVD
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.mlab import griddata
 
 
 # lr_solve()
@@ -46,6 +48,8 @@ def lr_tuning(X_train, X_validation):
     # Scaling between 1-10000 num of iterations adds another dimension as well.
     learning_rate_list = [.001, .0025, .0050, .0075, .01]
     penalty_term_list = [.001, .0025, .0050, .0075, .01]
+    #learning_rate_list = [.001, .005, .01]
+    #penalty_term_list = [.001, .005, .01]
     #learning_rate_list = np.arange(.001, .01001, 5)
     #penalty_term_list = np.arange(.001, .01001, 5)
 
@@ -80,22 +84,44 @@ def lr_tuning(X_train, X_validation):
             classes = util.load_classes("newsgrouplabels.txt")
             util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
-    learning_rate_points = [i[0] for i in accuracies]
-    penalty_term_points = [i[1] for i in accuracies]
-    accuracy_points = [i[2] for i in accuracies]
 
-    # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
-    fig = p.figure()#plt.figure()
-    #ax = plt.axes(projection='3d')
-    ax = Axes3D(fig)
-    ax.plot3D(learning_rate_points, penalty_term_points, accuracy_points)
-    ax.set_xlabel('Lambda')
-    ax.set_ylabel('Learning Rate')
-    ax.set_zlabel('Accuracy')
-    fig.add_axes(ax)
-    #ax.view_init(60,35)
-    #fig
-    p.show()
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    x = [i[0] for i in accuracies]
+    y = [i[1] for i in accuracies]
+    z = [i[2] for i in accuracies]
+
+    # https://stackoverflow.com/questions/4363857/matplotlib-color-in-3d-plotting-from-an-x-y-z-data-set-without-using-contour
+    xi = np.linspace(min(x), max(x))
+    yi = np.linspace(min(y), max(y))
+
+    X, Y = np.meshgrid(xi, yi)
+    Z = griddata(x, y, z, xi, yi, interp='linear')
+
+    surf = ax.plot_surface(X, Y, Z, rstride = 5, cstride = 5, cmap=cm.jet,
+                            linewidth=1, antialiased=True)
+
+    ax.set_zlim3d(np.min(Z), np.max(Z))
+    fig.colorbar(surf)
+    plt.show()
+
+    print(accuracy_points)
+
+#     # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+#     fig = p.figure()#plt.figure()
+#     #ax = plt.axes(projection='3d')
+#     ax = Axes3D(fig)
+#     ax.contour3D(learning_rate_points, penalty_term_points, accuracy_points)
+#     #ax.plot_surface(learning_rate_points, penalty_term_points, accuracy_points, rstride=1,
+# #                    cstride=1, cmap='viridis', edgecolor='none')
+#
+#     ax.set_xlabel('Lambda')
+#     ax.set_ylabel('Learning Rate')
+#     ax.set_zlabel('Accuracy')
+#     fig.add_axes(ax)
+#     #ax.view_init(60,35)
+#     #fig
+#     p.show()
 
     #contour(learning_rate_points, penalty_term_points, accuracy_points)
 
@@ -191,7 +217,7 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
-    
+
     print(predictions.shape)
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
