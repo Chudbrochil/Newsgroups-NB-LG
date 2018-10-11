@@ -58,7 +58,7 @@ def lr_tuning(X_train, X_validation):
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 5) # TODO: 1 iteration for now...
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1) # TODO: 1 iteration for now...
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -98,7 +98,7 @@ def lr_tuning(X_train, X_validation):
     X, Y = np.meshgrid(xi, yi)
     Z = griddata(x, y, z, xi, yi, interp='linear')
 
-    surf = ax.plot_surface(X, Y, Z, rstride = 5, cstride = 5, cmap=cm.jet,
+    surf = ax.plot_surface(X, Y, Z, rstride = 1, cstride = 1, cmap=cm.jet,
                             linewidth=1, antialiased=True)
 
     ax.set_zlim3d(np.min(Z), np.max(Z))
@@ -107,6 +107,8 @@ def lr_tuning(X_train, X_validation):
     ax.set_zlabel('Accuracy')
     fig.colorbar(surf)
     plt.show()
+
+    print(accuracies)
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
