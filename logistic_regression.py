@@ -26,8 +26,8 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
-    row_indices, col_indices = X.nonzero()
-    Z.data /= training_column_sums[col_indices]  #TODO: this is wild
+    # row_indices, col_indices = X.nonzero()
+    # X.data /= training_column_sums[col_indices]  #TODO: this is wild
 
     X = normalize_columns(X)
 
@@ -63,7 +63,7 @@ def lr_tuning(X_train, X_validation):
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1) 
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1)
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
