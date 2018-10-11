@@ -191,26 +191,7 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
-<<<<<<< HEAD
-    predictions = predictions.toarray()
-
-    max_value = -math.inf
-    max_index = -1
-    labels = []
-
-    # for every example
-    for j in range(predictions.shape[1]):
-        for i in range(20):
-            #print(str(i) + " : " + str(predictions[i][j]))
-            if predictions[i][j] > max_value:
-                max_value = predictions[i][j]
-                max_index = i+1
-        labels.append(max_index)
-        # print("")
-        max_value = -math.inf
-        max_index = -1
-
-=======
+    
     print(predictions.shape)
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
@@ -222,7 +203,6 @@ def lr_predict(X, W, Y):
         labels.append(maximum_index_for_each_example[0][i] + 1)
 
     # print(labels)
->>>>>>> 150cb398186b05fe5929e0b0e150456a42f9ebd5
     return labels
 
 
