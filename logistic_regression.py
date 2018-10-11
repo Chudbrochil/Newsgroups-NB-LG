@@ -102,30 +102,11 @@ def lr_tuning(X_train, X_validation):
                             linewidth=1, antialiased=True)
 
     ax.set_zlim3d(np.min(Z), np.max(Z))
+    ax.set_xlabel('Lambda')
+    ax.set_ylabel('Learning Rate')
+    ax.set_zlabel('Accuracy')
     fig.colorbar(surf)
     plt.show()
-
-    print(accuracy_points)
-
-#     # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
-#     fig = p.figure()#plt.figure()
-#     #ax = plt.axes(projection='3d')
-#     ax = Axes3D(fig)
-#     ax.contour3D(learning_rate_points, penalty_term_points, accuracy_points)
-#     #ax.plot_surface(learning_rate_points, penalty_term_points, accuracy_points, rstride=1,
-# #                    cstride=1, cmap='viridis', edgecolor='none')
-#
-#     ax.set_xlabel('Lambda')
-#     ax.set_ylabel('Learning Rate')
-#     ax.set_zlabel('Accuracy')
-#     fig.add_axes(ax)
-#     #ax.view_init(60,35)
-#     #fig
-#     p.show()
-
-    #contour(learning_rate_points, penalty_term_points, accuracy_points)
-
-    print(accuracies)
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
