@@ -66,7 +66,7 @@ def lr_tuning(X_train, X_validation):
                 if(predictions[i] == X_validation_classification[i]):
                     accuracy += 1
             accuracy /= X_validation_data.shape[0]
-            print("Accuracy on validation set with learning_rate: %f and penalty term: %f" % (learning_rate, penalty_term))
+            print("Accuracy on validation set with learning_rate: %f and penalty term: %f, %f" % (learning_rate, penalty_term, accuracy))
 
             accuracies[learning_rate, penalty_term] = accuracy
 
@@ -167,23 +167,18 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
+    print(predictions.shape)
+    # take maximum and get index for every example
+    maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
+    # print(maximum_index_for_each_example)
 
-    maximum_index_for_each_example = predictions.argmax(axis=1)
+    labels = []
+    for i in range(predictions.shape[1]):
+        # print(maximum_index_for_each_example[0][i])
+        labels.append(maximum_index_for_each_example[0][i] + 1)
 
-    predictions = []
-    for index in maximum_index_for_each_example:
-        predictions.append(index + 1)
-
-    if Y != None:
-        print("test")
-        accuracy = 0
-        for i in range(len(predictions)):
-            if predictions[i] == Y[i]:
-                accuracy += 1
-        accuracy /= len(predictions)
-        print("Accuracy of log reg: " + str(accuracy))
-
-    return predictions
+    # print(labels)
+    return labels
 
 
 
