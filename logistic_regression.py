@@ -6,8 +6,8 @@ from sklearn.decomposition import TruncatedSVD
 
 # lr_solve()
 # Trains logistic regression against some training data and then outputs predictions
-# for some given testing data. Learning rate, penalty and num. of iterations
-# are all tunable variables but they are hard-coded in main.
+# for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
+# are all tunable variables but they are brought in from main.
 def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
     training_data_no_classifications = training_data[:, :-1]
     training_data_classifications = training_data[:, -1:]
@@ -15,20 +15,20 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations)
 
     column_of_ones = np.full((test_data.shape[0], 1), 1)
+    # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
     X = normalize_columns(X)
 
     predictions = lr_predict(X, W, None)
 
-    util.output_predictions("log_reg_output.csv", predictions, 12001)
+    util.output_predictions("log_reg_output.csv", predictions, training_data.shape[0] + 1)
 
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
-# Trains using Gradient descent
+# Trains using Gradient descents
+# TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
 def lr_tuning(X_train, X_validation):
-
-    classes = util.load_classes("newsgrouplabels.txt")
 
     # separate features and classifications
     X_train_data = X_train[:, :-1]
@@ -37,24 +37,45 @@ def lr_tuning(X_train, X_validation):
     X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
 
-    # train/learn the weights for the matrix W
-    W = lr_train(X_train_data, X_train_classifications)
+    # Lists of values we are using for penalty term and learning rate
+    # Using 5 terms each which gives 5x5 = 25 data points vs. accuracy.
+    # Scaling between 1-10000 num of iterations adds another dimension as well.
+    learning_rate_list = [.001, .0025, .0050, .0075, .01]
+    penalty_term_list = [.001, .0025, .0050, .0075, .01]
 
-    # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
-    column_of_ones = np.full((X_validation.shape[0], 1), 1)
-    X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
-    # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
+    # Dictionary for accuracy, keys will be [learning_rate, penalty_term]
+    accuracies = {}
+    for learning_rate in learning_rate_list:
+        for penalty_term in penalty_term_list:
 
-    # same thing but use test data instead
-    # X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
+            # train/learn the weights for the matrix W
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 5) # TODO: 1 iteration for now...
 
-    # normalize the features (sum each column up and divide each nonzero element by that columns sum)
-    X = normalize_columns(X)
+            # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
+            column_of_ones = np.full((X_validation.shape[0], 1), 1)
+            X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
-    # will return the labels on the validation data, will also print our accuracy
-    predictions = lr_predict(X, W, X_validation_classification)
+            # normalize the features (sum each column up and divide each nonzero element by that columns sum)
+            X = normalize_columns(X)
 
-    util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+            # will return the labels on the validation data, will also print our accuracy
+            predictions = lr_predict(X, W, X_validation_classification)
+
+            accuracy = 0
+            for i in range(X_validation_data.shape[0]):
+                if(predictions[i] == X_validation_classification[i]):
+                    accuracy += 1
+            accuracy /= X_validation_data.shape[0]
+            print("Accuracy on validation set with learning_rate: %f and penalty term: %f" % (learning_rate, penalty_term))
+
+            accuracies[learning_rate, penalty_term] = accuracy
+
+            # TODO: Could put boolean flag for "build_confusion_matrix" here....
+            # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
+            classes = util.load_classes("newsgrouplabels.txt")
+            util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+
+    print(accuracies)
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
@@ -72,7 +93,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     #num_of_training_iterations = 1
     print("Num of iterations: " + str(num_of_iterations))
     #lambda_regularization = .01 # .1 best
-    print("Lambda regularization value: " + str(penalty_term))
+    print("Lambda(penalty_term) value: " + str(penalty_term))
 
     # num of examples
     m = X_train.shape[0]
