@@ -1,8 +1,12 @@
 import utilities as util
 import math
 import numpy as np
+import pylab as p
 import scipy.sparse
+import matplotlib.pyplot as plt
 from sklearn.decomposition import TruncatedSVD
+from mpl_toolkits.mplot3d import Axes3D
+
 
 # lr_solve()
 # Trains logistic regression against some training data and then outputs predictions
@@ -42,9 +46,10 @@ def lr_tuning(X_train, X_validation):
     # Scaling between 1-10000 num of iterations adds another dimension as well.
     learning_rate_list = [.001, .0025, .0050, .0075, .01]
     penalty_term_list = [.001, .0025, .0050, .0075, .01]
+    #learning_rate_list = np.arange(.001, .01001, 5)
+    #penalty_term_list = np.arange(.001, .01001, 5)
 
-    # Dictionary for accuracy, keys will be [learning_rate, penalty_term]
-    accuracies = {}
+    accuracies = []
     for learning_rate in learning_rate_list:
         for penalty_term in penalty_term_list:
 
@@ -68,12 +73,31 @@ def lr_tuning(X_train, X_validation):
             accuracy /= X_validation_data.shape[0]
             print("Accuracy on validation set with learning_rate: %f and penalty term: %f" % (learning_rate, penalty_term))
 
-            accuracies[learning_rate, penalty_term] = accuracy
+            accuracies.append((learning_rate, penalty_term, accuracy))
 
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
             classes = util.load_classes("newsgrouplabels.txt")
             util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+
+    learning_rate_points = [i[0] for i in accuracies]
+    penalty_term_points = [i[1] for i in accuracies]
+    accuracy_points = [i[2] for i in accuracies]
+
+    # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+    fig = p.figure()#plt.figure()
+    #ax = plt.axes(projection='3d')
+    ax = Axes3D(fig)
+    ax.plot3D(learning_rate_points, penalty_term_points, accuracy_points)
+    ax.set_xlabel('Lambda')
+    ax.set_ylabel('Learning Rate')
+    ax.set_zlabel('Accuracy')
+    fig.add_axes(ax)
+    #ax.view_init(60,35)
+    #fig
+    p.show()
+
+    #contour(learning_rate_points, penalty_term_points, accuracy_points)
 
     print(accuracies)
 
@@ -167,23 +191,25 @@ def normalize_columns(Z):
 # Also prints the accuracy for the given data
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
+    predictions = predictions.toarray()
 
-    maximum_index_for_each_example = predictions.argmax(axis=1)
+    max_value = -math.inf
+    max_index = -1
+    labels = []
 
-    predictions = []
-    for index in maximum_index_for_each_example:
-        predictions.append(index + 1)
+    # for every example
+    for j in range(predictions.shape[1]):
+        for i in range(20):
+            #print(str(i) + " : " + str(predictions[i][j]))
+            if predictions[i][j] > max_value:
+                max_value = predictions[i][j]
+                max_index = i+1
+        labels.append(max_index)
+        # print("")
+        max_value = -math.inf
+        max_index = -1
 
-    if Y != None:
-        print("test")
-        accuracy = 0
-        for i in range(len(predictions)):
-            if predictions[i] == Y[i]:
-                accuracy += 1
-        accuracy /= len(predictions)
-        print("Accuracy of log reg: " + str(accuracy))
-
-    return predictions
+    return labels
 
 
 
