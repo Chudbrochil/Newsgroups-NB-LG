@@ -147,21 +147,22 @@ def normalize_columns(Z):
 def lr_predict(X, W, Y):
     predictions = (W.dot(X.transpose())).expm1()
 
-    maximum_index_for_each_example = new_data_dotted_likelihoods_plus_priors.argmax(axis=1)
+    maximum_index_for_each_example = predictions.argmax(axis=1)
 
     predictions = []
-    for index in maximum_indices_for_each_example:
+    for index in maximum_index_for_each_example:
         predictions.append(index + 1)
 
     if Y != None:
+        print("test")
         accuracy = 0
-        for i in range(len(labels)):
-            if labels[i] == Y[i]:
+        for i in range(len(predictions)):
+            if predictions[i] == Y[i]:
                 accuracy += 1
-        accuracy /= len(labels)
-        print(accuracy)
+        accuracy /= len(predictions)
+        print("Accuracy of log reg: " + str(accuracy))
 
-    return labels
+    return predictions
 
 
 
