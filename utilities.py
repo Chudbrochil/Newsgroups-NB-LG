@@ -37,6 +37,18 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
     # # confusion_matrix_df.set_index(classes)
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
+def determine_most_important_features():
+    likelihood_probabilities = np.load("likelihood_matrix.dat")
+    # take the sum of each column
+    total_probabilities = likelihood_probabilities.max(axis=0)
+
+    # take X amount of top probabilities
+    ind_total_prob = np.argpartition(total_probabilities, -30000)[-30000:]
+    print(len(ind_total_prob))
+    print(ind_total_prob)
+    return ind_total_prob
+
+
 
 # output_predictions()
 # Outputs the predictions from classification and outputs them into a file.

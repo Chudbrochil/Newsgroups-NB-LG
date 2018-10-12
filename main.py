@@ -31,27 +31,18 @@ def main():
 
     if use_naive_bayes == True and is_tuning == True:
         # Tuning our naive bayes' given a range of Beta variables.
-        betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
+        # betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
+        betas = [.01]
         nb.nb_tuning(X_train, X_validation, betas)
     elif use_naive_bayes == True and is_tuning == False:
         # Run Naive Bayes' against the testing data, no validation dataset.
         nb.nb_solve(training_data, test_data, .01)
     elif use_naive_bayes == False and is_tuning == True:
         # Tuning Logistic Regression using a range of eta and lambda.
+
         lr.lr_tuning(X_train, X_validation)
     elif use_naive_bayes == False and is_tuning == False:
         lr.lr_solve(training_data, test_data, .001, .001, 10)
-
-
-def determine_most_important_features(likelihood_probabilities):
-    # take the sum of each column
-    total_probabilities = likelihood_probabilities.max(axis=0)
-    
-    # indices of top 1000 totals
-    ind_total_prob = np.argpartition(total_probabilities, -60000)[-60000:]
-    print(len(ind_total_prob))
-    print(ind_total_prob)
-    return ind_total_prob
 
 
 if __name__ == "__main__":

@@ -41,12 +41,15 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 # TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
 def lr_tuning(X_train, X_validation):
     global training_column_sums
-    # separate features and classifications
-    X_train_data = X_train[:, :-1]
-    X_train_classifications = X_train[:, -1:]
+    # use feature selection by Naive Bayes likelihood matrix
+    most_valuable_features = util.determine_most_important_features()
 
-    X_validation_data = X_validation[:, :-1]
+    X_train_classifications = X_train[:, -1:]
+    X_train_data = X_train[:, most_valuable_features]
+
     X_validation_classification = X_validation[:, -1:]
+    X_validation_data = X_validation[:, most_valuable_features]
+
 
     # Lists of values we are using for penalty term and learning rate
     # Using 5 terms each which gives 5x5 = 25 data points vs. accuracy.

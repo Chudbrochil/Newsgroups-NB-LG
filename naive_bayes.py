@@ -7,6 +7,15 @@ import matplotlib.pyplot as plt
 
 num_of_classes = 20 # TODO: Remove this global
 
+# nb_solve()
+# Training our naive bayes' algorithm against our full set of training data and
+# then getting predictions on testing data and then outputting that to a file.
+def nb_solve(training_data, testing_data, beta):
+    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
+    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
+    util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
+
+
 # nb_tuning()
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
@@ -48,16 +57,6 @@ def nb_tuning(X_train, X_validation, betas):
 
     util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
-
-# nb_solve()
-# Training our naive bayes' algorithm against our full set of training data and
-# then getting predictions on testing data and then outputting that to a file.
-def nb_solve(training_data, testing_data, beta):
-    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
-    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
-    util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
-
-
 # determine_total_words_in_classes()
 # Calculating how many total words are in each classification.
 # This is useful in likelihood calculation in denominator.
@@ -81,70 +80,6 @@ def determine_total_words_in_classes(data):
         total_words_in_class["class" + str(current_class)] += row_sums[x][0]
 
     return total_words_in_class
-
-
-# determine_prior_probabilities()
-# This calculates the prior ratio's of a given class / total examples.
-# i.e. "alt.atheism" has 490 words out of 18900 words total.
-# Returns a dictionary of the prior probabilities (Represented in formula by P(Y))
-def determine_prior_probabilities(classifications):
-
-    class_counts = {}
-    prior_probabilities = {}
-
-    # initialize class counts for dictionary
-    for i in range(num_of_classes):
-        class_counts["class" + str(i)] = 0
-
-    # add 1 for every label you encounter (1 instance)
-    for label in classifications.data:
-        class_counts["class" + str(label - 1)] += 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
-
-    # calculate the prior probabilities by dividing each class count by the total examples
-    for i in range(num_of_classes):
-        prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
-
-    return prior_probabilities
-
-
-# determine_likelihoods()
-# build a matrix: (classes, features) -> value is P(X|Y)
-# return matrix of probabilites
-# calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
-
-    likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
-    length_of_nonzero_data = len(non_zero_data[0])
-
-    # saving current row saves us ~1.5m hits for the entire data
-    current_row_index = -1
-    for i in range(length_of_nonzero_data):
-
-        # getting coordinates of nonzero ele
-        row_index = non_zero_data[0][i]
-        col_index = non_zero_data[1][i]
-
-        #if we're dealing with a new row
-        if(row_index != current_row_index):
-            current_classification = (data[row_index, -1:].data[0]) - 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
-            current_row_index = row_index
-
-        current_val = data[row_index, col_index]
-
-        likelihood_matrix[current_classification][col_index] += current_val
-
-    # Now that we have looped over all the non-zero data, we need to add laplace
-    # (1/61188) and divide it all by "total all words in Yk + 1"
-    for x in range(num_of_classes):
-        total_words = total_words_in_class["class" + str(x)]
-        for y in range(61189):
-            enhanced_likelihood = likelihood_matrix[x][y]
-            enhanced_likelihood += beta
-            enhanced_likelihood /= (total_words + (61188 * beta))
-            likelihood_matrix[x][y] = enhanced_likelihood
-
-    return likelihood_matrix
-
 
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
@@ -204,3 +139,66 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing =
     print("Predictions shape: " + str(np.array(predictions).shape))
 
     return predictions
+
+# determine_prior_probabilities()
+# This calculates the prior ratio's of a given class / total examples.
+# i.e. "alt.atheism" has 490 words out of 18900 words total.
+# Returns a dictionary of the prior probabilities (Represented in formula by P(Y))
+def determine_prior_probabilities(classifications):
+
+    class_counts = {}
+    prior_probabilities = {}
+
+    # initialize class counts for dictionary
+    for i in range(num_of_classes):
+        class_counts["class" + str(i)] = 0
+
+    # add 1 for every label you encounter (1 instance)
+    for label in classifications.data:
+        class_counts["class" + str(label - 1)] += 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
+
+    # calculate the prior probabilities by dividing each class count by the total examples
+    for i in range(num_of_classes):
+        prior_probabilities["class" + str(i)] = class_counts["class" + str(i)] / len(classifications.data)
+
+    return prior_probabilities
+
+
+# determine_likelihoods()
+# build a matrix: (classes, features) -> value is P(X|Y)
+# return matrix of probabilites
+# calculate P(X|Y) -> count # words in feature i with class k / total words in class k
+def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
+
+    likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
+    length_of_nonzero_data = len(non_zero_data[0])
+
+    # saving current row saves us ~1.5m hits for the entire data
+    current_row_index = -1
+    for i in range(length_of_nonzero_data):
+
+        # getting coordinates of nonzero ele
+        row_index = non_zero_data[0][i]
+        col_index = non_zero_data[1][i]
+
+        #if we're dealing with a new row
+        if(row_index != current_row_index):
+            current_classification = (data[row_index, -1:].data[0]) - 1 # NOTE: The classifications are 1-index'ed. This is "the fix"
+            current_row_index = row_index
+
+        current_val = data[row_index, col_index]
+        likelihood_matrix[current_classification][col_index] += current_val
+
+    # Now that we have looped over all the non-zero data, we need to add laplace
+    # (1/61188) and divide it all by "total all words in Yk + 1"
+    for x in range(num_of_classes):
+        total_words = total_words_in_class["class" + str(x)]
+        for y in range(61189):
+            enhanced_likelihood = likelihood_matrix[x][y]
+            enhanced_likelihood += beta
+            enhanced_likelihood /= (total_words + (61188 * beta))
+            likelihood_matrix[x][y] = enhanced_likelihood
+
+    # save likelihood matrix using numpy pickle
+    likelihood_matrix.dump("likelihood_matrix.dat")
+    return likelihood_matrix
