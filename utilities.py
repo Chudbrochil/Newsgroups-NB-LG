@@ -13,8 +13,6 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
     confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
     len_pred = len(predictions)
     true_classes = true_classes.data
-    print(predictions[0])
-    print(true_classes[0])
     # for every class prediction and true class value
     for i in range(len_pred):
         # we hope that these two are equal for a strong diagonal correlation
