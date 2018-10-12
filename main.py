@@ -45,7 +45,8 @@ def main():
 
 def determine_most_important_features(likelihood_probabilities):
     # take the sum of each column
-    total_probabilities = likelihood_probabilities.sum(axis=0)
+    total_probabilities = likelihood_probabilities.max(axis=0)
+    
     # indices of top 1000 totals
     ind_total_prob = np.argpartition(total_probabilities, -60000)[-60000:]
     print(len(ind_total_prob))

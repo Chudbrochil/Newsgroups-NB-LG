@@ -87,7 +87,7 @@ def lr_tuning(X_train, X_validation):
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
             classes = util.load_classes("newsgrouplabels.txt")
-            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+            util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
 
     fig = plt.figure()
@@ -207,11 +207,9 @@ def lr_predict(X, W, Y):
 
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
-    # print(maximum_index_for_each_example)
 
     labels = []
     for i in range(predictions.shape[1]):
-        # print(maximum_index_for_each_example[0][i])
         labels.append(maximum_index_for_each_example[0][i] + 1)
 
     # print(labels)
