@@ -45,7 +45,7 @@ def main():
     #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     betas = [.01] # Range of betas for tuning Naive Bayes'.
     beta = .01 # Beta variable for NB running on testing data.
-    num_of_iterations = 50 # Number of weight updates in logistic regression
+    num_of_iterations = 100 # Number of weight updates in logistic regression
     learning_rate = .001 # Learning or eta term
     penalty_term = .001 # Penalty or lambda term
     show_matrix = False # Whether or not to show confusion matrix plot
@@ -69,7 +69,7 @@ def main():
             nb.nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_selection)
         else:
             # Tuning Logistic Regression using a range of eta and lambda.
-            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes)
+            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection)
     else:
         # Loading the testing data fromW an npz file also.
         test_data = scipy.sparse.load_npz("testing_sparse.npz")
@@ -78,7 +78,7 @@ def main():
             # Run Naive Bayes' against the testing data, no validation dataset.
             nb.nb_solve(training_data, test_data, beta, classes, feature_selection)
         else:
-            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, classes)
+            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, feature_selection)
 
 
 if __name__ == "__main__":

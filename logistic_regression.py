@@ -16,20 +16,26 @@ training_column_sums = np.array([])
 # Trains logistic regression against some training data and then outputs predictions
 # for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
 # are all tunable variables but they are brought in from main.
-def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
+def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations, feature_selection):
     global training_column_sums
 
-    training_data_no_classifications = training_data[:, :-1]
-    training_data_classifications = training_data[:, -1:]
+    if feature_selection:
+        most_valuable_features = util.determine_most_important_features()
+        training_data_classifications = training_data[:, -1:]
+        training_data_no_classifications = training_data[:, most_valuable_features]
+        test_data = test_data[:, most_valuable_features]
+    else:
+        training_data_no_classifications = training_data[:, :-1]
+        training_data_classifications = training_data[:, -1:]
 
     W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations)
 
     column_of_ones = np.full((test_data.shape[0], 1), 1)
-    # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
-    row_indices, col_indices = X.nonzero()
-    X.data /= training_column_sums[col_indices]
+    # TODO: Not normalizing the prediciton data has empirically proven to be the best
+    # row_indices, col_indices = X.nonzero()
+    # X.data /= training_column_sums[col_indices]
 
     predictions = lr_predict(X, W, None)
 
@@ -38,16 +44,22 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descents
-def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes):
+def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection):
     global training_column_sum
     # use feature selection by Naive Bayes likelihood matrix
-    most_valuable_features = util.determine_most_important_features()
+    if feature_selection:
+        most_valuable_features = util.determine_most_important_features()
 
-    X_train_classifications = X_train[:, -1:]
-    X_train_data = X_train[:, most_valuable_features]
+        X_train_classifications = X_train[:, -1:]
+        X_train_data = X_train[:, most_valuable_features]
 
-    X_validation_classification = X_validation[:, -1:]
-    X_validation_data = X_validation[:, most_valuable_features]
+        X_validation_classification = X_validation[:, -1:]
+        X_validation_data = X_validation[:, most_valuable_features]
+    else:
+        X_train_classifications = X_train[:, -1:]
+        X_train_data = X_train[:, :-1]
+        X_validation_classification = X_validation[:, -1:]
+        X_validation_data = X_validation[:, :-1]
 
     accuracies = []
     for learning_rate in learning_rate_list:
@@ -60,7 +72,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
             X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
-            # after empircal tests, not normalizing the validation data has performed the best
+            # after empirical tests, not normalizing the validation data has performed the best
             # X = normalize_columns(X)
 
             # will return the labels on the validation data, will also print our accuracy

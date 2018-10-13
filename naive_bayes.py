@@ -13,7 +13,7 @@ most_important_features = []
 def nb_solve(training_data, testing_data, beta, classes, feature_selection):
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta, classes, feature_selection)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, feature_selection, True)
-    util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
+    util.output_predictions("nb_testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
 
 # nb_tuning()
