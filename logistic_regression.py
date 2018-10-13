@@ -10,13 +10,15 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.mlab import griddata
 
 # only global to avoid chain of returns
-training_column_sums = []
+training_column_sums = np.array([])
 
 # lr_solve()
 # Trains logistic regression against some training data and then outputs predictions
 # for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
 # are all tunable variables but they are brought in from main.
 def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
+    global training_column_sums
+
     training_data_no_classifications = training_data[:, :-1]
     training_data_classifications = training_data[:, -1:]
 
@@ -26,10 +28,8 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
-    # row_indices, col_indices = X.nonzero()
-    # X.data /= training_column_sums[col_indices]  #TODO: this is wild
-
-    X = normalize_columns(X)
+    row_indices, col_indices = X.nonzero()
+    X.data /= training_column_sums[col_indices
 
     predictions = lr_predict(X, W, None)
 
@@ -40,13 +40,15 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 # Trains using Gradient descents
 # TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
 def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list):
+    global training_column_sum
+    # use feature selection by Naive Bayes likelihood matrix
+    most_valuable_features = util.determine_most_important_features()
 
-    # separate features and classifications
-    X_train_data = X_train[:, :-1]
     X_train_classifications = X_train[:, -1:]
+    X_train_data = X_train[:, most_valuable_features]
 
-    X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
+    X_validation_data = X_validation[:, most_valuable_features]
 
     accuracies = []
     for learning_rate in learning_rate_list:
@@ -59,8 +61,8 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
             X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
-            # normalize the features (sum each column up and divide each nonzero element by that columns sum)
-            X = normalize_columns(X)
+            # after empircal tests, not normalizing the validation data has performed the best
+            # X = normalize_columns(X)
 
             # will return the labels on the validation data, will also print our accuracy
             predictions = lr_predict(X, W, X_validation_classification)
@@ -150,7 +152,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
         print("iteration" + str(i))
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-        # Z.data = Z.data + 1
+         Z = normalize_columns(Z)
         # gradient w.r.t. Weights with regularization
         dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
@@ -183,12 +185,14 @@ def initialize_delta(delta, Y):
 # by that features summation
  # TODO: study python broadcasting...
 def normalize_columns(Z):
-
+    global training_column_sums
     # take the sum of each column
     column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
     row_indices, col_indices = Z.nonzero()
     Z.data /= column_sums[col_indices]  #TODO: this is wild
-    training_column_sums = column_sums
+
+    if len(training_column_sums) == 0:
+        training_column_sums = column_sums
 
     return Z
 
