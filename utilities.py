@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.sparse
 
 num_of_classes = 20 # TODO: Remove this, we can run load_classes()
 
@@ -39,20 +40,33 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
-    amount_of_features_keeping = 100
+    amount_of_features_keeping = 1000
     likelihood_probabilities = np.load("likelihood_matrix.dat")
     likelihood_probabilities = likelihood_probabilities[:, :-1]
-    # print(likelihood_probabilities.shape)
     # take the sum of each column
     total_probabilities = likelihood_probabilities.max(axis=0)
 
-    # take X amount of top probabilities
+    # sort in descending order
+    # total_probabilities = sorted(total_probabilities, reverse=True)
+    # ind_total_prob = range(100)
+
+    # take X amount of top probabilities, in no particular order
     ind_total_prob = np.argpartition(total_probabilities, -amount_of_features_keeping)[-amount_of_features_keeping:]
-    # print(total_probabilities[ind_total_prob])
-    # print(ind_total_prob)
-    match_variable_nums(ind_total_prob)
+    # filter_based_on_counts(ind_total_prob)
+    # match_variable_nums(ind_total_prob)
     return ind_total_prob
 
+
+def filter_based_on_counts(ind_total_prob):
+    training_data = scipy.sparse.load_npz("training_sparse.npz")
+    training_data = training_data[:, :-1]
+    # get data based on highest probabilities
+    training_data = training_data[:, ind_total_prob]
+
+    total_counts_each_feature = training_data.sum(axis=0)
+
+
+# match_variable_nums(): used to output top variables to a file
 def match_variable_nums(int_total_prob):
     vocab = pd.read_csv('vocabulary.txt', sep=" ", header=None)
     vocab_values = vocab.values

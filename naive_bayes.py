@@ -153,7 +153,6 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_o
     data_classifications = data[:, -1:]
     data = data[:, most_important_features]
     data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
-    print(data.shape)
 
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
