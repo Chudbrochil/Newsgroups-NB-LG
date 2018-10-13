@@ -58,8 +58,6 @@ def main():
     training_data = scipy.sparse.load_npz("training_sparse.npz")
     classes = util.load_classes("newsgrouplabels.txt")
 
-    #TODO: get rid of this, not sure how to toggle this argument
-    args.is_tuning = True
     if args.is_tuning == True:
         print("Tuning mode on.")
         # Splits our data into training data and validation data.

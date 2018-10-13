@@ -10,8 +10,8 @@ most_important_features = []
 # nb_solve()
 # Training our naive bayes' algorithm against our full set of training data and
 # then getting predictions on testing data and then outputting that to a file.
-def nb_solve(training_data, testing_data, beta):
-    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
+def nb_solve(training_data, testing_data, beta, classes):
+    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta, classes)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
     util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
@@ -82,9 +82,12 @@ def nb_train(data, beta, classes):
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing = False):
     # use most important features determined from training data
-    data_classifications = data[:, -1:]
-    data = data[:, most_important_features]
-    data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+    if is_testing == False:
+        data_classifications = data[:, -1:]
+        data = data[:, most_important_features]
+        data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+    else:
+        data = data[:, most_important_features]
 
     log_priors = []
     for value in prior_probabilities.values():
