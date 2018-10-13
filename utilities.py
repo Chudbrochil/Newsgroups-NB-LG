@@ -13,8 +13,6 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
     confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
     len_pred = len(predictions)
     true_classes = true_classes.data
-    print(predictions[0])
-    print(true_classes[0])
     # for every class prediction and true class value
     for i in range(len_pred):
         # we hope that these two are equal for a strong diagonal correlation
@@ -22,6 +20,7 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
+<<<<<<< HEAD
     #plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
     #plt.show()
 
@@ -33,7 +32,34 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
     plt.ylabel("Predicted classifications")
     plt.show()
     # confusion_matrix_df.set_index(classes)
+=======
+    # plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
+    # plt.xticks(np.arange(20), classes, rotation='85')
+    # plt.yticks(np.arange(20), classes)
+    # plt.tick_params(axis='both', labelsize='6')
+    # plt.xlabel("True classifications")
+    # plt.ylabel("Predicted classifications")
+    # plt.title("Confusion Matrix of Pred. Classes vs True Classes")
+    # plt.tight_layout()
+    # for (j, i), label in np.ndenumerate(confusion_matrix):
+    #     if label != 0:
+    #         plt.text(i,j,label,ha='center',va='center', size='6')
+    # plt.show()
+    # # confusion_matrix_df.set_index(classes)
+>>>>>>> 22cb8d81f39cec1f940340a4df81d07dad16a92f
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
+
+def determine_most_important_features():
+    likelihood_probabilities = np.load("likelihood_matrix.dat")
+    # take the sum of each column
+    total_probabilities = likelihood_probabilities.max(axis=0)
+
+    # take X amount of top probabilities
+    ind_total_prob = np.argpartition(total_probabilities, -30000)[-30000:]
+    print(len(ind_total_prob))
+    print(ind_total_prob)
+    return ind_total_prob
+
 
 
 # output_predictions()
