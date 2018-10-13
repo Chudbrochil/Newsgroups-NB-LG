@@ -16,11 +16,11 @@ training_column_sums = []
 # Trains logistic regression against some training data and then outputs predictions
 # for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
 # are all tunable variables but they are brought in from main.
-def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
+def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations, classes):
     training_data_no_classifications = training_data[:, :-1]
     training_data_classifications = training_data[:, -1:]
 
-    W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations)
+    W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations, classes)
 
     column_of_ones = np.full((test_data.shape[0], 1), 1)
     # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
@@ -38,8 +38,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descents
-# TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
-def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list):
+def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes):
 
     # separate features and classifications
     X_train_data = X_train[:, :-1]
@@ -53,7 +52,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, num_of_iterations)
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, num_of_iterations, classes)
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -76,7 +75,6 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
-            classes = util.load_classes("newsgrouplabels.txt")
             # util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
 
@@ -113,20 +111,12 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
 # This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
-def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
-
-    # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
-    #learning_rate = 0.05 # .001 best
-    print("Learning rate: " + str(learning_rate))
-    #num_of_training_iterations = 1
-    print("Num of iterations: " + str(num_of_iterations))
-    #lambda_regularization = .01 # .1 best
-    print("Lambda(penalty_term) value: " + str(penalty_term))
+def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations, classes):
 
     # num of examples
     m = X_train.shape[0]
     # num of classes
-    k = 20 # TODO: Hard coded variable (num_of_classes)
+    k = len(classes)
     # num of features
     n = X_train.shape[1]
 

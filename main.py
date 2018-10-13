@@ -1,5 +1,6 @@
 import naive_bayes as nb
 import logistic_regression as lr
+import utilities as util
 import scipy.sparse
 from sklearn.model_selection import train_test_split
 import argparse
@@ -23,7 +24,7 @@ def main():
                          "NB & LR applied to \"Bag of Words\" document classification."
 
     parser = argparse.ArgumentParser(description=description_string, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-t', dest='is_tuning', action='store_true',
+    parser.add_argument('-t', dest='tuning', action='store_true',
                         help="Set this to true if you would like to do tuning for the algorithm you specify.")
     parser.add_argument('-a', dest='algorithm', type=str, action='store', nargs='?',
                         default="nb", help='Which algorithm do you want to use. Acceptable options are \"nb\" or \"lr\".')
@@ -56,27 +57,28 @@ def main():
     # TODO: Add a toggle for making a confusion matrix or not.
     # Loads in a sparse matrix (csr_matrix) from a npz file.
     training_data = scipy.sparse.load_npz("training_sparse.npz")
+    classes = util.load_classes("newsgrouplabels.txt")
 
-    if args.is_tuning == True:
+    if args.tuning == True:
         print("Tuning mode on.")
         # Splits our data into training data and validation data.
         X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
 
         if use_naive_bayes == True:
             # Tuning our naive bayes' given a range of Beta variables.
-            nb.nb_tuning(X_train, X_validation, betas, show_matrix)
+            nb.nb_tuning(X_train, X_validation, betas, show_matrix, classes)
         else:
             # Tuning Logistic Regression using a range of eta and lambda.
-            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list)
+            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes)
     else:
         # Loading the testing data fromW an npz file also.
         test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
         if use_naive_bayes == True:
             # Run Naive Bayes' against the testing data, no validation dataset.
-            nb.nb_solve(training_data, test_data, beta)
+            nb.nb_solve(training_data, test_data, beta, classes)
         else:
-            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations)
+            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, classes)
 
 
 if __name__ == "__main__":
