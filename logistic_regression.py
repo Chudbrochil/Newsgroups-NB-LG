@@ -63,11 +63,7 @@ def lr_tuning(X_train, X_validation):
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-<<<<<<< HEAD
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 10000) 
-=======
             W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1)
->>>>>>> c925624ad9574dfed54eb82007e1118392d65c98
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
