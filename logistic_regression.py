@@ -33,7 +33,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 
     predictions = lr_predict(X, W, None)
 
-    util.output_predictions("log_reg_output.csv", predictions, training_data.shape[0] + 1)
+    util.output_predictions("lr_testing_output.csv", predictions, training_data.shape[0] + 1)
 
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
@@ -77,7 +77,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
             classes = util.load_classes("newsgrouplabels.txt")
-            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv")
 
 
     fig = plt.figure()
@@ -107,7 +107,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
-    # output_predictions("log_reg_testdata_output.csv", labels, 12001)
+    # output_predictions("lr_validation_output.csv", labels, 12001)
 
 
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W

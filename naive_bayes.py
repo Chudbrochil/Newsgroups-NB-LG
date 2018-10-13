@@ -13,7 +13,7 @@ num_of_classes = 20 # TODO: Remove this global
 def nb_solve(training_data, testing_data, beta):
     likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
-    util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
+    util.output_predictions("nb_testing_output.csv", predictions, training_data.shape[0] + 1)
 
 
 # nb_tuning()
@@ -36,7 +36,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix):
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
-        util.build_confusion_matrix(predictions, X_validation_classification, classes, "naive_bayes_confusionMatrix.csv", show_matrix)
+        util.build_confusion_matrix(predictions, X_validation_classification, classes, "nb_confusion_matrix.csv", show_matrix)
 
         accuracy = 0
         for i in range(X_validation.shape[0]):
@@ -55,7 +55,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix):
     plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
-    util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    util.output_predictions("nb_validation_output.csv", predictions, X_train.shape[0])
 
 
 # determine_total_words_in_classes()
