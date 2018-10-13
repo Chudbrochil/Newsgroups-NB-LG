@@ -10,15 +10,13 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.mlab import griddata
 
 # only global to avoid chain of returns
-training_column_sums = np.array([])
+training_column_sums = []
 
 # lr_solve()
 # Trains logistic regression against some training data and then outputs predictions
 # for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
 # are all tunable variables but they are brought in from main.
 def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations):
-    global training_column_sums
-
     training_data_no_classifications = training_data[:, :-1]
     training_data_classifications = training_data[:, -1:]
 
@@ -28,8 +26,10 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     # TODO: Normalize the validation set using the same sums as the training set (Per Trilce)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
-    row_indices, col_indices = X.nonzero()
-    X.data /= training_column_sums[col_indices]
+    # row_indices, col_indices = X.nonzero()
+    # X.data /= training_column_sums[col_indices]  #TODO: this is wild
+
+    X = normalize_columns(X)
 
     predictions = lr_predict(X, W, None)
 
@@ -39,46 +39,28 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descents
 # TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
-def lr_tuning(X_train, X_validation):
-    global training_column_sums
-    # use feature selection by Naive Bayes likelihood matrix
-    most_valuable_features = util.determine_most_important_features()
+def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list):
 
+    # separate features and classifications
+    X_train_data = X_train[:, :-1]
     X_train_classifications = X_train[:, -1:]
-    X_train_data = X_train[:, most_valuable_features]
 
+    X_validation_data = X_validation[:, :-1]
     X_validation_classification = X_validation[:, -1:]
-    X_validation_data = X_validation[:, most_valuable_features]
-
-
-    # Lists of values we are using for penalty term and learning rate
-    # Using 5 terms each which gives 5x5 = 25 data points vs. accuracy.
-    # Scaling between 1-10000 num of iterations adds another dimension as well.
-    learning_rate_list = [0.0001, .001, .0025, .0050, .0075, .01]
-    penalty_term_list = [.0001, .001, .0025, .0050, .0075, .01]
-    #learning_rate_list = [.001, .005, .01]
-    #penalty_term_list = [.001, .005, .01]
-    #learning_rate_list = np.arange(.001, .01001, 5)
-    #penalty_term_list = np.arange(.001, .01001, 5)
 
     accuracies = []
     for learning_rate in learning_rate_list:
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-<<<<<<< HEAD
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 1)
-=======
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, 500)
->>>>>>> 22cb8d81f39cec1f940340a4df81d07dad16a92f
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, num_of_iterations)
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
             X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
             # normalize the features (sum each column up and divide each nonzero element by that columns sum)
-            # after empircal tests, not normalizing the validation data has performed the best
-            # X = normalize_columns(X)
+            X = normalize_columns(X)
 
             # will return the labels on the validation data, will also print our accuracy
             predictions = lr_predict(X, W, X_validation_classification)
@@ -88,14 +70,14 @@ def lr_tuning(X_train, X_validation):
                 if(predictions[i] == X_validation_classification[i]):
                     accuracy += 1
             accuracy /= X_validation_data.shape[0]
-            print("Accuracy on validation set with learning_rate: %f and penalty term: %f, %f" % (learning_rate, penalty_term, accuracy))
+            print("learning_rate: %f and penalty term: %f, Accuracy on validation: %f" % (learning_rate, penalty_term, accuracy))
 
             accuracies.append((learning_rate, penalty_term, accuracy))
 
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
             classes = util.load_classes("newsgrouplabels.txt")
-            util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
+            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "log_reg_confusionMatrix.csv")
 
 
     fig = plt.figure()
@@ -126,6 +108,7 @@ def lr_tuning(X_train, X_validation):
     # labels = log_reg_predict(X, W, None, "testing")
     # if predicting on test
     # output_predictions("log_reg_testdata_output.csv", labels, 12001)
+
 
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
@@ -165,10 +148,9 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
     for i in range(num_of_iterations):
         print("iteration" + str(i))
-
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-        Z = normalize_columns(Z)
+        # Z.data = Z.data + 1
         # gradient w.r.t. Weights with regularization
         dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
@@ -179,6 +161,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
     # return matrix of weights to use for predictions
     return W
+
 
 # Set index equal to 1 if it's the same index as the class , 0 for all other classes, (Dirac Delta function)
 # returns a matrix based on Dirac Delta function
@@ -195,22 +178,20 @@ def initialize_delta(delta, Y):
 
     return delta
 
+
 # normalize_columns: takes the sum of every column and divides the nonzero data for a feature
 # by that features summation
  # TODO: study python broadcasting...
 def normalize_columns(Z):
-    global training_column_sums
 
     # take the sum of each column
     column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
     row_indices, col_indices = Z.nonzero()
-    # print(column_sums.shape)
     Z.data /= column_sums[col_indices]  #TODO: this is wild
-
-    if len(training_column_sums) == 0:
-        training_column_sums = column_sums
+    training_column_sums = column_sums
 
     return Z
+
 
 # log_reg_predict: returns the predictions for the given data X. These predictions were
 # learned by the weight matrix W which we trained using GD in logisic_reg_train
@@ -220,14 +201,15 @@ def lr_predict(X, W, Y):
 
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
+    # print(maximum_index_for_each_example)
 
     labels = []
     for i in range(predictions.shape[1]):
+        # print(maximum_index_for_each_example[0][i])
         labels.append(maximum_index_for_each_example[0][i] + 1)
 
     # print(labels)
     return labels
-
 
 
     # TODO: figure out dimensionality reduction techinique

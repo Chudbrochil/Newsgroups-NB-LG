@@ -20,7 +20,7 @@ def nb_solve(training_data, testing_data, beta):
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
 # data set when it is done running.
-def nb_tuning(X_train, X_validation, betas):
+def nb_tuning(X_train, X_validation, betas, show_matrix):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
     classes = util.load_classes("newsgrouplabels.txt")
@@ -36,7 +36,7 @@ def nb_tuning(X_train, X_validation, betas):
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
-        util.build_confusion_matrix(predictions, X_validation_classification, classes, "naive_bayes_confusionMatrix.csv")
+        util.build_confusion_matrix(predictions, X_validation_classification, classes, "naive_bayes_confusionMatrix.csv", show_matrix)
 
         accuracy = 0
         for i in range(X_validation.shape[0]):
@@ -56,6 +56,7 @@ def nb_tuning(X_train, X_validation, betas):
     plt.show()
 
     util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
+
 
 # determine_total_words_in_classes()
 # Calculating how many total words are in each classification.
@@ -81,6 +82,7 @@ def determine_total_words_in_classes(data):
 
     return total_words_in_class
 
+
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
@@ -102,6 +104,7 @@ def nb_train(data, beta):
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta)
 
     return likelihood_probabilities, prior_probabilities
+
 
 # nb_predict()
 # Calculates the prediction function for Naive Bayes
@@ -139,6 +142,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing =
     print("Predictions shape: " + str(np.array(predictions).shape))
 
     return predictions
+
 
 # determine_prior_probabilities()
 # This calculates the prior ratio's of a given class / total examples.

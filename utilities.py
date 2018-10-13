@@ -9,7 +9,7 @@ num_of_classes = 20 # TODO: Remove this, we can run load_classes()
 # Builds the confusion matrix for either naive bayes' or logistic regression.
 # Our goal is to have a strong diagonal which corresponds to good correlation
 # between validation data classifications and our predictions.
-def build_confusion_matrix(predictions, true_classes, classes, file_name):
+def build_confusion_matrix(predictions, true_classes, classes, file_name, show_matrix):
     confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
     len_pred = len(predictions)
     true_classes = true_classes.data
@@ -20,18 +20,21 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
-    # plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
-    # plt.xticks(np.arange(20), classes, rotation='85')
-    # plt.yticks(np.arange(20), classes)
-    # plt.tick_params(axis='both', labelsize='6')
-    # plt.xlabel("True classifications")
-    # plt.ylabel("Predicted classifications")
-    # plt.title("Confusion Matrix of Pred. Classes vs True Classes")
-    # plt.tight_layout()
-    # for (j, i), label in np.ndenumerate(confusion_matrix):
-    #     if label != 0:
-    #         plt.text(i,j,label,ha='center',va='center', size='6')
-    # plt.show()
+    if show_matrix == True:
+        plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
+        plt.xticks(np.arange(20), classes, rotation='85')
+        plt.yticks(np.arange(20), classes)
+        plt.tick_params(axis='both', labelsize='6')
+        plt.xlabel("True classifications")
+        plt.ylabel("Predicted classifications")
+        plt.title("Confusion Matrix of Pred. Classes vs True Classes")
+        plt.tight_layout()
+        for (j, i), label in np.ndenumerate(confusion_matrix):
+            if label != 0:
+                plt.text(i,j,label,ha='center',va='center', size='6')
+        plt.show()
+
+
     # # confusion_matrix_df.set_index(classes)
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
@@ -47,13 +50,12 @@ def determine_most_important_features():
     return ind_total_prob
 
 
-
 # output_predictions()
 # Outputs the predictions from classification and outputs them into a file.
 def output_predictions(file_name, predictions, starting_num):
 
     output_file = open(file_name, "w")
-
+    print("Writing to file: %s" % file_name)
     output_file.write("id,class\n")
 
     i = 0
@@ -63,6 +65,7 @@ def output_predictions(file_name, predictions, starting_num):
         i += 1
 
     output_file.close()
+
 
 # load_classes()
 # Loads the file that has the newsgroup classifications in it and returns
