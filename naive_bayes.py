@@ -5,12 +5,13 @@ import math
 import matplotlib.pyplot as plt
 
 
+num_of_classes = 20 # TODO: Remove this global
+
 # nb_solve()
 # Training our naive bayes' algorithm against our full set of training data and
 # then getting predictions on testing data and then outputting that to a file.
-def nb_solve(training_data, testing_data, beta, classes):
-    num_of_classes = len(classes)
-    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta, num_of_classes)
+def nb_solve(training_data, testing_data, beta):
+    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta)
     predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
     util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
@@ -19,10 +20,10 @@ def nb_solve(training_data, testing_data, beta, classes):
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
 # data set when it is done running.
-def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
-    num_of_classes = len(classes)
+def nb_tuning(X_train, X_validation, betas, show_matrix):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
+    classes = util.load_classes("newsgrouplabels.txt")
 
     X_validation_classification = X_validation[:, -1:]
     accuracies = []
@@ -32,7 +33,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
     # classify the validation data and then use this to train
     for beta in betas:
         # Training naive bayes
-        likelihood_probabilities, prior_probabilities = nb_train(X_train, beta, num_of_classes)
+        likelihood_probabilities, prior_probabilities = nb_train(X_train, beta)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
 
         util.build_confusion_matrix(predictions, X_validation_classification, classes, "naive_bayes_confusionMatrix.csv", show_matrix)
@@ -60,7 +61,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
 # determine_total_words_in_classes()
 # Calculating how many total words are in each classification.
 # This is useful in likelihood calculation in denominator.
-def determine_total_words_in_classes(data, num_of_classes):
+def determine_total_words_in_classes(data):
 
     total_examples = data.shape[0]
     # We don't want the class counts to interfere with data counts
@@ -86,18 +87,21 @@ def determine_total_words_in_classes(data, num_of_classes):
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
 # validation data), and a Beta tuning variable.
-def nb_train(data, beta, num_of_classes):
+def nb_train(data, beta):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
+    # Loading in classes as strings from newsgrouplabels.txt
+    classes = util.load_classes("newsgrouplabels.txt")
+
     # Calculate total # of words per a class. Needed for determine_likelihoods.
-    total_words_in_class = determine_total_words_in_classes(data, num_of_classes)
+    total_words_in_class = determine_total_words_in_classes(data)
 
     # Calculate the ratio of prior probabilities, i.e. given_class/total_examples
-    prior_probabilities= determine_prior_probabilities(data[:, -1:], num_of_classes)
+    prior_probabilities= determine_prior_probabilities(data[:, -1:])
 
     # pass the dataset except the classifications
-    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes)
+    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta)
 
     return likelihood_probabilities, prior_probabilities
 
@@ -115,8 +119,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing =
 
     likelihood_probabilities.data = np.log(likelihood_probabilities.data)
 
-    # If we are testing, then we don't need the last column of likelihoods for dimensionality.
     if is_testing == True:
+        # TODO: Chop off the last column, Why do we have to do this?
         likelihood_probabilities = np.delete(likelihood_probabilities, -1, axis=1)
 
     # gives matrix of (examples, classes)
@@ -144,7 +148,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing =
 # This calculates the prior ratio's of a given class / total examples.
 # i.e. "alt.atheism" has 490 words out of 18900 words total.
 # Returns a dictionary of the prior probabilities (Represented in formula by P(Y))
-def determine_prior_probabilities(classifications, num_of_classes):
+def determine_prior_probabilities(classifications):
 
     class_counts = {}
     prior_probabilities = {}
@@ -168,7 +172,7 @@ def determine_prior_probabilities(classifications, num_of_classes):
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes):
+def determine_likelihoods(data, non_zero_data, total_words_in_class, beta):
 
     likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
