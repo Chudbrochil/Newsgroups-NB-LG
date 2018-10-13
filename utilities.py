@@ -40,6 +40,7 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
+    print("Using feature selection...")
     amount_of_features_keeping = 60000
     likelihood_probabilities = np.load("likelihood_matrix.dat")
     likelihood_probabilities = likelihood_probabilities[:, :-1]

@@ -10,9 +10,9 @@ most_important_features = []
 # nb_solve()
 # Training our naive bayes' algorithm against our full set of training data and
 # then getting predictions on testing data and then outputting that to a file.
-def nb_solve(training_data, testing_data, beta, classes):
-    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta, classes)
-    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, True)
+def nb_solve(training_data, testing_data, beta, classes, feature_selection):
+    likelihood_probabilities, prior_probabilities = nb_train(training_data, beta, classes, feature_selection)
+    predictions = nb_predict(testing_data, prior_probabilities, likelihood_probabilities, feature_selection, True)
     util.output_predictions("testing_predictions.csv", predictions, training_data.shape[0] + 1)
 
 
@@ -20,7 +20,7 @@ def nb_solve(training_data, testing_data, beta, classes):
 # Tunes naive bayes for a range of Beta values. This method will run the Naive Bayes'
 # algorithm for each of these Beta variables and then plot accuracy vs. the validation
 # data set when it is done running.
-def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
+def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_selection):
     print("Training set size: " + str(X_train.shape))
     print("Validation set size: " + str(X_validation.shape))
 
@@ -32,10 +32,10 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
     # classify the validation data and then use this to train
     for beta in betas:
         # Training naive bayes
-        likelihood_probabilities, prior_probabilities = nb_train(X_train, beta, classes)
-        predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities)
+        likelihood_probabilities, prior_probabilities = nb_train(X_train, beta, classes, feature_selection)
+        predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities, feature_selection)
 
-        util.build_confusion_matrix(predictions, X_validation_classification, classes, "nb_confusion_matrix.csv", False)
+        util.build_confusion_matrix(predictions, X_validation_classification, classes, "nb_confusion_matrix.csv", show_matrix)
 
         accuracy = 0
         for i in range(X_validation.shape[0]):
@@ -60,7 +60,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
 # validation data), and a Beta tuning variable.
-def nb_train(data, beta, classes):
+def nb_train(data, beta, classes, feature_selection):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
     num_of_classes = len(classes)
@@ -72,7 +72,7 @@ def nb_train(data, beta, classes):
     prior_probabilities= determine_prior_probabilities(data[:, -1:], num_of_classes)
 
     # pass the dataset except the classifications
-    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes)
+    likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes, feature_selection)
 
     return likelihood_probabilities, prior_probabilities
 
@@ -80,14 +80,15 @@ def nb_train(data, beta, classes):
 # Calculates the prediction function for Naive Bayes
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
-def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing = False):
+def nb_predict(data, prior_probabilities, likelihood_probabilities, feature_selection, is_testing = False):
     # use most important features determined from training data
-    if is_testing == False:
-        data_classifications = data[:, -1:]
-        data = data[:, most_important_features]
-        data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
-    else:
-        data = data[:, most_important_features]
+    if feature_selection:
+        if is_testing == False:
+            data_classifications = data[:, -1:]
+            data = data[:, most_important_features]
+            data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+        else:
+            data = data[:, most_important_features]
 
     log_priors = []
     for value in prior_probabilities.values():
@@ -149,18 +150,22 @@ def determine_prior_probabilities(classifications, num_of_classes):
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
 # TODO: this function desperately needs to be rewritten using matrix ops
-def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes):
+def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes, feature_selection):
     # determine most important features from previously calculated likelihood matrix
     global most_important_features
-    most_important_features = util.determine_most_important_features()
-    data_classifications = data[:, -1:]
-    data = data[:, most_important_features]
-    data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+
+    if feature_selection:
+        most_important_features = util.determine_most_important_features()
+        data_classifications = data[:, -1:]
+        data = data[:, most_important_features]
+        data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+        num_of_features = len(most_important_features)
+    else:
+        num_of_features = 61188
 
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
 
-    num_of_features = len(most_important_features)
     likelihood_matrix = np.zeros((num_of_classes, num_of_features+1)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
 
