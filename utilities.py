@@ -20,19 +20,6 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
-<<<<<<< HEAD
-    #plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
-    #plt.show()
-
-    plt.imshow(confusion_matrix_df.values, cmap='hot', interpolation='nearest')
-    plt.xticks(np.arange(20), classes, rotation='vertical')
-    plt.yticks(np.arange(20), classes)
-    plt.tick_params(axis='both', labelsize='7')
-    plt.xlabel("True classifications")
-    plt.ylabel("Predicted classifications")
-    plt.show()
-    # confusion_matrix_df.set_index(classes)
-=======
     # plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
     # plt.xticks(np.arange(20), classes, rotation='85')
     # plt.yticks(np.arange(20), classes)
@@ -46,7 +33,6 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
     #         plt.text(i,j,label,ha='center',va='center', size='6')
     # plt.show()
     # # confusion_matrix_df.set_index(classes)
->>>>>>> 22cb8d81f39cec1f940340a4df81d07dad16a92f
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
