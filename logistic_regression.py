@@ -29,7 +29,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
     row_indices, col_indices = X.nonzero()
-    X.data /= training_column_sums[col_indices
+    X.data /= training_column_sums[col_indices]
 
     predictions = lr_predict(X, W, None)
 
@@ -144,7 +144,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     X = normalize_columns(X)
 
     # Weights for calculating conditional probability, initialized as all 0
-    #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
+    # W = scipy.sparse.csr_matrix(np.random.uniform(low=0, high=1, size=(k,n+1)))
     W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
     # TODO: Make the weight matrix here random, then in for loop we have to normalize.
 
@@ -152,7 +152,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
         print("iteration" + str(i))
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-         Z = normalize_columns(Z)
+        Z = normalize_columns(Z)
         # gradient w.r.t. Weights with regularization
         dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
