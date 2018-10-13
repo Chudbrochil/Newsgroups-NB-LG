@@ -39,17 +39,29 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
-    amount_of_features_keeping = 60000
+    amount_of_features_keeping = 100
     likelihood_probabilities = np.load("likelihood_matrix.dat")
+    likelihood_probabilities = likelihood_probabilities[:, :-1]
+    # print(likelihood_probabilities.shape)
     # take the sum of each column
     total_probabilities = likelihood_probabilities.max(axis=0)
 
     # take X amount of top probabilities
     ind_total_prob = np.argpartition(total_probabilities, -amount_of_features_keeping)[-amount_of_features_keeping:]
-    print(len(ind_total_prob))
-    print(ind_total_prob)
+    # print(total_probabilities[ind_total_prob])
+    # print(ind_total_prob)
+    match_variable_nums(ind_total_prob)
     return ind_total_prob
 
+def match_variable_nums(int_total_prob):
+    vocab = pd.read_csv('vocabulary.txt', sep=" ", header=None)
+    vocab_values = vocab.values
+    # print("Shape of vocabulary " + str(vocab_values.shape))
+    most_important_vocab = vocab_values[int_total_prob, 0]
+    most_important_vocab = pd.DataFrame(most_important_vocab)
+    most_important_vocab.to_csv("top_100_vocabulary.txt", header=None)
+    # print("Shape of most important vocab" + str(most_important_vocab.shape))
+    # print(most_important_vocab)
 
 # output_predictions()
 # Outputs the predictions from classification and outputs them into a file.
