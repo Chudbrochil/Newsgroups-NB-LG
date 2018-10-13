@@ -134,7 +134,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     X = normalize_columns(X)
 
     # Weights for calculating conditional probability, initialized as all 0
-    #W = scipy.sparse.csr_matrix(np.random.randn(k, n+1))
+    # W = scipy.sparse.csr_matrix(np.random.uniform(low=0, high=1, size=(k,n+1)))
     W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
     # TODO: Make the weight matrix here random, then in for loop we have to normalize.
 

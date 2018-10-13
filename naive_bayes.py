@@ -3,7 +3,9 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import scipy.sparse
 
+most_important_features = []
 
 # nb_solve()
 # Training our naive bayes' algorithm against our full set of training data and
@@ -58,11 +60,17 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
 # validation data), and a Beta tuning variable.
+<<<<<<< HEAD
 def nb_train(data, beta, classes):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
     num_of_classes = len(classes)
 
+=======
+def nb_train(data, beta):
+    # Loading in classes as strings from newsgrouplabels.txt
+    classes = util.load_classes("newsgrouplabels.txt")
+>>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
     # Calculate total # of words per a class. Needed for determine_likelihoods.
     total_words_in_class = determine_total_words_in_classes(data, num_of_classes)
@@ -71,7 +79,11 @@ def nb_train(data, beta, classes):
     prior_probabilities= determine_prior_probabilities(data[:, -1:], num_of_classes)
 
     # pass the dataset except the classifications
+<<<<<<< HEAD
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes)
+=======
+    likelihood_probabilities = determine_likelihoods(data, total_words_in_class, beta)
+>>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
     return likelihood_probabilities, prior_probabilities
 
@@ -80,6 +92,10 @@ def nb_train(data, beta, classes):
 # Classifies a set of data (validation or testing) based upon the likelihood
 # matrix (P(X|Y)) and priors (P(Y)) that we calculated earlier.
 def nb_predict(data, prior_probabilities, likelihood_probabilities, is_testing = False):
+    # use most important features determined from training data
+    data_classifications = data[:, -1:]
+    data = data[:, most_important_features]
+    data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
 
     log_priors = []
     for value in prior_probabilities.values():
@@ -140,12 +156,26 @@ def determine_prior_probabilities(classifications, num_of_classes):
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
+<<<<<<< HEAD
 def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes):
+=======
+# TODO: this function desperately needs to be rewritten using matrix ops
+def determine_likelihoods(data, total_words_in_class, beta):
+    # determine most important features from previously calculated likelihood matrix
+    global most_important_features
+    most_important_features = util.determine_most_important_features()
+    data_classifications = data[:, -1:]
+    data = data[:, most_important_features]
+    data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
+    print(data.shape)
+>>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
-    likelihood_matrix = np.zeros((num_of_classes, 61189)) # NOTE: 61189 because we have classifications also.
+    # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
+    non_zero_data = data.nonzero()
+
+    num_of_features = len(most_important_features)
+    likelihood_matrix = np.zeros((num_of_classes, num_of_features+1)) # NOTE: 61189 because we have classifications also.
     length_of_nonzero_data = len(non_zero_data[0])
-
-    most_important_features = determine_most_important_features()
 
     # saving current row saves us ~1.5m hits for the entire data
     current_row_index = -1
@@ -167,14 +197,14 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_o
     # (1/61188) and divide it all by "total all words in Yk + 1"
     for x in range(num_of_classes):
         total_words = total_words_in_class["class" + str(x)]
-        for y in range(61189):
+        for y in range(num_of_features+1):
             enhanced_likelihood = likelihood_matrix[x][y]
             enhanced_likelihood += beta
-            enhanced_likelihood /= (total_words + (61188 * beta))
+            enhanced_likelihood /= (total_words + (num_of_features * beta))
             likelihood_matrix[x][y] = enhanced_likelihood
 
     # save likelihood matrix using numpy pickle
-    likelihood_matrix.dump("likelihood_matrix.dat")
+    # likelihood_matrix.dump("likelihood_matrix.dat")
     return likelihood_matrix
 
 # determine_total_words_in_classes()
