@@ -60,17 +60,10 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes):
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
 # validation data), and a Beta tuning variable.
-<<<<<<< HEAD
 def nb_train(data, beta, classes):
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
     num_of_classes = len(classes)
-
-=======
-def nb_train(data, beta):
-    # Loading in classes as strings from newsgrouplabels.txt
-    classes = util.load_classes("newsgrouplabels.txt")
->>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
     # Calculate total # of words per a class. Needed for determine_likelihoods.
     total_words_in_class = determine_total_words_in_classes(data, num_of_classes)
@@ -79,11 +72,7 @@ def nb_train(data, beta):
     prior_probabilities= determine_prior_probabilities(data[:, -1:], num_of_classes)
 
     # pass the dataset except the classifications
-<<<<<<< HEAD
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes)
-=======
-    likelihood_probabilities = determine_likelihoods(data, total_words_in_class, beta)
->>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
     return likelihood_probabilities, prior_probabilities
 
