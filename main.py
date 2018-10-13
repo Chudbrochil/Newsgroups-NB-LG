@@ -38,7 +38,7 @@ def main():
         nb.nb_solve(training_data, test_data, .01)
     elif use_naive_bayes == False and is_tuning == True:
         # Tuning Logistic Regression using a range of eta and lambda.
-        lr.lr_tuning(X_train, X_validation)
+        lr.lr_tuning(X_train, X_validation, 1)
     elif use_naive_bayes == False and is_tuning == False:
         lr.lr_solve(training_data, test_data, .001, .001, 10)
 
