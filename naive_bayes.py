@@ -145,11 +145,8 @@ def determine_prior_probabilities(classifications, num_of_classes):
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-<<<<<<< HEAD
-def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes):
-=======
 # TODO: this function desperately needs to be rewritten using matrix ops
-def determine_likelihoods(data, total_words_in_class, beta):
+def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes):
     # determine most important features from previously calculated likelihood matrix
     global most_important_features
     most_important_features = util.determine_most_important_features()
@@ -157,7 +154,6 @@ def determine_likelihoods(data, total_words_in_class, beta):
     data = data[:, most_important_features]
     data = scipy.sparse.csr_matrix(scipy.sparse.hstack((data, data_classifications)))
     print(data.shape)
->>>>>>> 4a13aeda4af8c444173cf5d6a3a58dd4b906d9e9
 
     # returns a tuple of lists that contain the non-zero indexes of the matrix data ([row_indices], [col_indices])
     non_zero_data = data.nonzero()
