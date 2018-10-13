@@ -29,7 +29,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
     row_indices, col_indices = X.nonzero()
-    X.data /= training_column_sums[col_indices
+    X.data /= training_column_sums[col_indices]
 
     predictions = lr_predict(X, W, None)
 
@@ -38,8 +38,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descents
-# TODO: Do tuning for eta(learning rate), lambda(penalty term), and 1 vs. 1000(10000?) iterations
-def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list):
+def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes):
     global training_column_sum
     # use feature selection by Naive Bayes likelihood matrix
     most_valuable_features = util.determine_most_important_features()
@@ -78,8 +77,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
-            classes = util.load_classes("newsgrouplabels.txt")
-            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv")
+            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv", True)
 
 
     fig = plt.figure()
@@ -117,14 +115,6 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 # This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
 def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
 
-    # tunable parameters that will heavily impact the accuracy and convergence rate of Gradient Descent
-    #learning_rate = 0.05 # .001 best
-    print("Learning rate: " + str(learning_rate))
-    #num_of_training_iterations = 1
-    print("Num of iterations: " + str(num_of_iterations))
-    #lambda_regularization = .01 # .1 best
-    print("Lambda(penalty_term) value: " + str(penalty_term))
-
     # num of examples
     m = X_train.shape[0]
     # num of classes
@@ -152,7 +142,7 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
         print("iteration" + str(i))
         # matrix of probabilities, P( Y | W, X) ~ exp(W * X^T)
         Z = (W.dot(X.transpose())).expm1()
-         Z = normalize_columns(Z)
+        Z = normalize_columns(Z)
         # gradient w.r.t. Weights with regularization
         dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
