@@ -49,6 +49,7 @@ def main():
     learning_rate = .001 # Learning or eta term
     penalty_term = .001 # Penalty or lambda term
     show_matrix = False # Whether or not to show confusion matrix plot
+    feature_selection = False # whether or not you would like to use feature selection
 
     # Lists of learning_rate and penalty_terms for tuning logistic regression.
     learning_rate_list = [.001, .0025, .0050, .0075, .01]
@@ -61,8 +62,6 @@ def main():
     training_data = scipy.sparse.load_npz("training_sparse.npz")
     classes = util.load_classes("newsgrouplabels.txt")
 
-    #TODO: get rid of this, not sure how to toggle this argument
-    args.is_tuning = True
     if args.is_tuning == True:
         print("Tuning mode on.")
         # Splits our data into training data and validation data.
@@ -70,19 +69,19 @@ def main():
 
         if use_naive_bayes == True:
             # Tuning our naive bayes' given a range of Beta variables.
-            nb.nb_tuning(X_train, X_validation, betas, show_matrix, classes)
+            nb.nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_selection)
         else:
             # Tuning Logistic Regression using a range of eta and lambda.
-            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes)
+            lr.lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection)
     else:
         # Loading the testing data fromW an npz file also.
         test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
         if use_naive_bayes == True:
             # Run Naive Bayes' against the testing data, no validation dataset.
-            nb.nb_solve(training_data, test_data, beta, classes)
+            nb.nb_solve(training_data, test_data, beta, classes, feature_selection)
         else:
-            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, classes)
+            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, feature_selection)
 
 
 if __name__ == "__main__":
