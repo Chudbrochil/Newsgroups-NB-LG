@@ -72,6 +72,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
             X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
+
             # after empirical tests, not normalizing the validation data has performed the best
             # X = normalize_columns(X)
 
@@ -89,7 +90,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
             # TODO: Could put boolean flag for "build_confusion_matrix" here....
             # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
-            # util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv", True)
+            util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv", True)
 
 
     fig = plt.figure()
