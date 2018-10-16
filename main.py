@@ -55,6 +55,9 @@ def main():
     learning_rate_list = [.001, .0025, .0050, .0075, .01]
     penalty_term_list = [.001, .0025, .0050, .0075, .01]
 
+    #learning_rate_list = [.0001, .0005, .001]
+    #penalty_term_list = [.05]
+
     # Loads in a sparse matrix (csr_matrix) from a npz file.
     training_data = scipy.sparse.load_npz("training_sparse.npz")
     classes = util.load_classes("newsgrouplabels.txt")

@@ -3,15 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.sparse
 
-num_of_classes = 20 # TODO: Remove this, we can run load_classes()
-
 
 # build_confusion_matrix()
 # Builds the confusion matrix for either naive bayes' or logistic regression.
 # Our goal is to have a strong diagonal which corresponds to good correlation
 # between validation data classifications and our predictions.
 def build_confusion_matrix(predictions, true_classes, classes, file_name, show_matrix):
-    confusion_matrix = np.zeros((num_of_classes, num_of_classes), dtype=np.int64)
+    confusion_matrix = np.zeros(len(classes), len(classes), dtype=np.int64)
     len_pred = len(predictions)
     true_classes = true_classes.data
     # for every class prediction and true class value
@@ -40,7 +38,7 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
-    print("Using feature selection...")
+    print("Using feature selection.")
     amount_of_features_keeping = 60000
     likelihood_probabilities = np.load("likelihood_matrix.dat")
     likelihood_probabilities = likelihood_probabilities[:, :-1]
