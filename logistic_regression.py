@@ -112,6 +112,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
     ax.set_xlabel('Learning Rate')
     ax.set_ylabel('Lambda')
     ax.set_zlabel('Accuracy')
+    ax.set_title('Logistic Regression tuning Eta & Lambda - Iterations:' + str(num_of_iterations))
     fig.colorbar(surf)
     plt.show()
 
