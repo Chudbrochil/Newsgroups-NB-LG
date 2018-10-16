@@ -28,7 +28,7 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
         plt.tick_params(axis='both', labelsize='6')
         plt.xlabel("True classifications")
         plt.ylabel("Predicted classifications")
-        plt.title("Confusion Matrix of Pred. Classes vs True Classes")
+        plt.title("Confusion Matrix of Pred. Classes vs True Classes for Logistic Regression")
         plt.tight_layout()
         for (j, i), label in np.ndenumerate(confusion_matrix):
             if label != 0:
