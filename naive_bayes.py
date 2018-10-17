@@ -92,7 +92,6 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, feature_sele
 
     log_priors = []
     for value in prior_probabilities.values():
-        print(value)
         log_value = math.log(value)
         log_priors.append(log_value)
 

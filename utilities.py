@@ -45,7 +45,7 @@ def determine_most_important_features():
     #
     # idk = np.array(mutual_info_classif(X_train, X_train_class))
     # idk.dump("list_of_most_important_features_ranking.dat")
-    amount_of_features = 100
+    amount_of_features = 60000
     rankings_of_each_feature = np.load("list_of_most_important_features_ranking.dat")
     most_important_features = np.argpartition(rankings_of_each_feature, -amount_of_features)[-amount_of_features:]
     # print(most_important_features)

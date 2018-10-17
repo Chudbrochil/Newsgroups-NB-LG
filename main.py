@@ -45,7 +45,7 @@ def main():
     #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     betas = [.01] # Range of betas for tuning Naive Bayes'.
     beta = .01 # Beta variable for NB running on testing data.
-    num_of_iterations = 3000 # Number of weight updates in logistic regression
+    num_of_iterations = 100 # Number of weight updates in logistic regression
     learning_rate = .05 # Learning or eta term
     penalty_term = .05 # Penalty or lambda term
     show_matrix = False # Whether or not to show confusion matrix plot
