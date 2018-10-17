@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import scipy.sparse
 
+
 most_important_features = []
 
 # nb_solve()
@@ -33,7 +34,8 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_select
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta, classes, feature_selection)
         predictions = nb_predict(X_validation, prior_probabilities, likelihood_probabilities, feature_selection)
 
-        util.build_confusion_matrix(predictions, X_validation_classification, classes, "nb_confusion_matrix.csv", show_matrix)
+        if show_matrix == True:
+            util.build_confusion_matrix(predictions, X_validation_classification, classes, "nb_confusion_matrix.csv")
 
         accuracy = 0
         for i in range(X_validation.shape[0]):
@@ -52,8 +54,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_select
     plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
-    if show_matrix == True:
-        util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
