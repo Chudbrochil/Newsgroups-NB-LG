@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.feature_selection import mutual_info_classif
 import scipy.sparse
 
 
@@ -34,48 +35,22 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
+# This gave us the most important features np list file. This is no longer used as we
+# have saved that file and read it in instead of it recomputing it on every run.
 def determine_most_important_features():
-    print("Using feature selection.")
-    amount_of_features_keeping = 60000
-    likelihood_probabilities = np.load("likelihood_matrix.dat")
-    likelihood_probabilities = likelihood_probabilities[:, :-1]
-    # take the sum of each column
-    total_probabilities = likelihood_probabilities.max(axis=0)
-
-    # sort in descending order
-    # total_probabilities = sorted(total_probabilities, reverse=True)
-    # ind_total_prob = range(100)
-
-    # take X amount of top probabilities, in no particular order
-    ind_total_prob = np.argpartition(total_probabilities, -amount_of_features_keeping)[-amount_of_features_keeping:]
-    #filtered_ind_total_prob = filter_based_on_counts(ind_total_prob)
-    # match_variable_nums(ind_total_prob)
-    return ind_total_prob
-
-# filter_based_on_counts: a complicated filtering to help with feature seleciton that had
-# little to no improvement
-def filter_based_on_counts(ind_total_prob):
-    training_data = scipy.sparse.load_npz("training_sparse.npz")
-    training_data = training_data[:, :-1]
-    # get data based on highest probabilities
-    training_data = training_data[:, ind_total_prob]
-
-    total_counts_each_feature =  np.array(training_data.sum(axis=0))[0,:]
-    print(total_counts_each_feature)
-
-    indices_and_counts = zip(ind_total_prob, total_counts_each_feature)
-
-    sorted_indices_and_counts = sorted(indices_and_counts, key=lambda tup: tup[1])
-    print("Sorted by counts" + str(sorted_indices_and_counts))
-
-    choose_middle_100_words = sorted_indices_and_counts[:4900]
-    # get first element of each tuple and make a list
-    indices_of_choosen_words = [i[0] for i in choose_middle_100_words]
-
-    print("Indices of middle 100 words: " + str(indices_of_choosen_words))
-
-    return indices_of_choosen_words
-
+    # the below code was used to generate the list of most important features rankings
+    # if is_Nb:
+    #     X_train = data[:, :-1]
+    #     X_train_class = data[:, -1:].todense()
+    #
+    # idk = np.array(mutual_info_classif(X_train, X_train_class))
+    # idk.dump("list_of_most_important_features_ranking.dat")
+    amount_of_features = 60000
+    rankings_of_each_feature = np.load("list_of_most_important_features_ranking.dat")
+    most_important_features = np.argpartition(rankings_of_each_feature, -amount_of_features)[-amount_of_features:]
+    # print(most_important_features)
+    # match_variable_nums(most_important_features)
+    return most_important_features
 
 # match_variable_nums(): used to output top variables to a file
 def match_variable_nums(int_total_prob):
