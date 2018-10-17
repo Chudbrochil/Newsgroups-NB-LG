@@ -1,11 +1,9 @@
 import utilities as util
-import math
 import numpy as np
 import pylab as p
 import scipy.sparse
 from matplotlib import cm
 import matplotlib.pyplot as plt
-from sklearn.decomposition import TruncatedSVD
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.mlab import griddata
 
