@@ -45,18 +45,15 @@ def main():
     #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
     betas = [.01] # Range of betas for tuning Naive Bayes'.
     beta = .01 # Beta variable for NB running on testing data.
-    num_of_iterations = 100 # Number of weight updates in logistic regression
-    learning_rate = .001 # Learning or eta term
-    penalty_term = .001 # Penalty or lambda term
+    num_of_iterations = 1000 # Number of weight updates in logistic regression
+    learning_rate = .05 # Learning or eta term
+    penalty_term = .05 # Penalty or lambda term
     show_matrix = False # Whether or not to show confusion matrix plot
-    feature_selection = False # whether or not you would like to use feature selection
+    feature_selection = True # whether or not you would like to use feature selection
 
     # Lists of learning_rate and penalty_terms for tuning logistic regression.
     learning_rate_list = [.001, .0025, .0050, .0075, .01]
     penalty_term_list = [.001, .0025, .0050, .0075, .01]
-
-    #learning_rate_list = [.0001, .0005, .001]
-    #penalty_term_list = [.05]
 
     # Loads in a sparse matrix (csr_matrix) from a npz file.
     training_data = scipy.sparse.load_npz("training_sparse.npz")
@@ -65,7 +62,9 @@ def main():
     if args.is_tuning == True:
         print("Tuning mode on.")
         # Splits our data into training data and validation data.
-        X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+        #X_train, X_validation = train_test_split(training_data, test_size = .2)#, shuffle = True)
+        X_train = training_data[0:9600, :]
+        X_validation = training_data[9600:, :]
 
         if use_naive_bayes == True:
             # Tuning our naive bayes' given a range of Beta variables.

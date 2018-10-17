@@ -8,7 +8,7 @@ import scipy.sparse
 # Builds the confusion matrix for either naive bayes' or logistic regression.
 # Our goal is to have a strong diagonal which corresponds to good correlation
 # between validation data classifications and our predictions.
-def build_confusion_matrix(predictions, true_classes, classes, file_name, show_matrix):
+def build_confusion_matrix(predictions, true_classes, classes, file_name):
     confusion_matrix = np.zeros(len(classes), len(classes), dtype=np.int64)
     len_pred = len(predictions)
     true_classes = true_classes.data
@@ -19,22 +19,19 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name, show_m
 
     confusion_matrix_df = pd.DataFrame(confusion_matrix, index= classes)
 
-    if show_matrix == True:
-        plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
-        plt.xticks(np.arange(20), classes, rotation='85')
-        plt.yticks(np.arange(20), classes)
-        plt.tick_params(axis='both', labelsize='6')
-        plt.xlabel("True classifications")
-        plt.ylabel("Predicted classifications")
-        plt.title("Confusion Matrix of Pred. Classes vs True Classes for Logistic Regression")
-        plt.tight_layout()
-        for (j, i), label in np.ndenumerate(confusion_matrix):
-            if label != 0:
-                plt.text(i,j,label,ha='center',va='center', size='6')
-        plt.show()
+    plt.imshow(confusion_matrix_df.values, cmap='viridis', interpolation='nearest')
+    plt.xticks(np.arange(20), classes, rotation='85')
+    plt.yticks(np.arange(20), classes)
+    plt.tick_params(axis='both', labelsize='6')
+    plt.xlabel("True classifications")
+    plt.ylabel("Predicted classifications")
+    plt.title("Confusion Matrix of Pred. Classes vs True Classes for Logistic Regression")
+    plt.tight_layout()
+    for (j, i), label in np.ndenumerate(confusion_matrix):
+        if label != 0:
+            plt.text(i,j,label,ha='center',va='center', size='6')
+    plt.show()
 
-
-    # # confusion_matrix_df.set_index(classes)
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
 def determine_most_important_features():
@@ -84,12 +81,10 @@ def filter_based_on_counts(ind_total_prob):
 def match_variable_nums(int_total_prob):
     vocab = pd.read_csv('vocabulary.txt', sep=" ", header=None)
     vocab_values = vocab.values
-    # print("Shape of vocabulary " + str(vocab_values.shape))
     most_important_vocab = vocab_values[int_total_prob, 0]
     most_important_vocab = pd.DataFrame(most_important_vocab)
     most_important_vocab.to_csv("top_100_vocabulary.txt", header=None)
-    # print("Shape of most important vocab" + str(most_important_vocab.shape))
-    # print(most_important_vocab)
+
 
 # output_predictions()
 # Outputs the predictions from classification and outputs them into a file.

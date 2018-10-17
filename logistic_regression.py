@@ -33,7 +33,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
     column_of_ones = np.full((test_data.shape[0], 1), 1)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
 
-    # TODO: Not normalizing the prediciton data has empirically proven to be the best
+    # Not normalizing the prediction data has empirically proven to be the best
     # row_indices, col_indices = X.nonzero()
     # X.data /= training_column_sums[col_indices]
 
@@ -44,7 +44,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 
 # logistic_regression_solution: preprocessing and steps needed to use the logitic reg. alg
 # Trains using Gradient descents
-def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection):
+def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection, show_matrix):
     global training_column_sum
     # use feature selection by Naive Bayes likelihood matrix
     if feature_selection:
@@ -72,7 +72,6 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
             X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, X_validation_data)), dtype = "float64")
 
-
             # after empirical tests, not normalizing the validation data has performed the best
             # X = normalize_columns(X)
 
@@ -88,11 +87,16 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
             accuracies.append((learning_rate, penalty_term, accuracy))
 
-            # TODO: Could put boolean flag for "build_confusion_matrix" here....
-            # TODO: This is in a weird place. We don't need a confusion_matrix for each tuned variable (or do we?)
-            util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv", True)
+            # Show the confusion matrix if we asked for it in main.
+            if show_matrix == True:
+                util.build_confusion_matrix(predictions, X_validation_classification, classes, "lr_confusion_matrix.csv", True)
+
+    plot_lr_tuning(accuracies, num_of_iterations)
 
 
+# plot_lr_tuning()
+# This is all of the plotting code for lr_tuning.
+def plot_lr_tuning(accuracies, num_of_iterations):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     x = [i[0] for i in accuracies] # Gathering lambda values
@@ -119,10 +123,6 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
 
     print(accuracies)
 
-    # labels = log_reg_predict(X, W, None, "testing")
-    # if predicting on test
-    # output_predictions("lr_validation_output.csv", labels, 12001)
-
 
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
@@ -147,10 +147,9 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
     # normalize the features (sum each column up and divide each nonzero element by that columns sum)
     X = normalize_columns(X)
 
-    # Weights for calculating conditional probability, initialized as all 0
-    # W = scipy.sparse.csr_matrix(np.random.uniform(low=0, high=1, size=(k,n+1)))
+    # Weights for calculating conditional probability, initialized as all 0.
+    # Tried initializing the matrix as all random numbers and the accuracy plummeted.
     W = scipy.sparse.csr_matrix(np.zeros((k, n+1), dtype=np.float64))
-    # TODO: Make the weight matrix here random, then in for loop we have to normalize.
 
     for i in range(num_of_iterations):
         print("iteration" + str(i))
@@ -161,9 +160,6 @@ def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
         dZ = ((delta - Z) * X) - (penalty_term * W)
         # learning rule
         W = W + (learning_rate * dZ)
-
-        # make predictions training data for each iteration, this adds min. time as the heaviest thing is normalizing
-        #log_reg_predict(X, W, Y, "training")
 
     # return matrix of weights to use for predictions
     return W
@@ -187,13 +183,12 @@ def initialize_delta(delta, Y):
 
 # normalize_columns: takes the sum of every column and divides the nonzero data for a feature
 # by that features summation
- # TODO: study python broadcasting...
 def normalize_columns(Z):
     global training_column_sums
-    # take the sum of each column
+    # take the sum of each column, uses python broadcasting to normalize only non-zero data
     column_sums = np.array(Z.sum(axis=0))[0,:] # column vector
     row_indices, col_indices = Z.nonzero()
-    Z.data /= column_sums[col_indices]  #TODO: this is wild
+    Z.data /= column_sums[col_indices]
 
     if len(training_column_sums) == 0:
         training_column_sums = column_sums
@@ -209,20 +204,9 @@ def lr_predict(X, W, Y):
 
     # take maximum and get index for every example
     maximum_index_for_each_example = predictions.argmax(axis=0).ravel().tolist()
-    # print(maximum_index_for_each_example)
 
     labels = []
     for i in range(predictions.shape[1]):
-        # print(maximum_index_for_each_example[0][i])
         labels.append(maximum_index_for_each_example[0][i] + 1)
 
-    # print(labels)
     return labels
-
-
-    # TODO: figure out dimensionality reduction techinique
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_train_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_train_data))
-    #
-    # truncated_SVD = TruncatedSVD(n_components = 50)
-    # X_validation_data = scipy.sparse.csr_matrix(truncated_SVD.fit_transform(X_validation_data))

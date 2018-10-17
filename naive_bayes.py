@@ -28,8 +28,6 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_select
     accuracies = []
 
     # Go through and train on each beta
-    # TODO: Store likelihood_probabilities and prior_probabilities that best
-    # classify the validation data and then use this to train
     for beta in betas:
         # Training naive bayes
         likelihood_probabilities, prior_probabilities = nb_train(X_train, beta, classes, feature_selection)
@@ -54,7 +52,8 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_select
     plt.title('Accuracy of Validation Data while tuning Beta parameter')
     plt.show()
 
-    util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
+    if show_matrix == True:
+        util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
@@ -98,8 +97,8 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, feature_sele
 
     likelihood_probabilities.data = np.log(likelihood_probabilities.data)
 
+    # When we are training, we don't want the last column which corresponds to classifications.
     if is_testing == True:
-        # TODO: Chop off the last column, Why do we have to do this?
         likelihood_probabilities = np.delete(likelihood_probabilities, -1, axis=1)
 
     # gives matrix of (examples, classes)
@@ -150,7 +149,6 @@ def determine_prior_probabilities(classifications, num_of_classes):
 # build a matrix: (classes, features) -> value is P(X|Y)
 # return matrix of probabilites
 # calculate P(X|Y) -> count # words in feature i with class k / total words in class k
-# TODO: this function desperately needs to be rewritten using matrix ops
 def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes, feature_selection):
     # determine most important features from previously calculated likelihood matrix
     global most_important_features
