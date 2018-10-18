@@ -56,6 +56,7 @@ def nb_tuning(X_train, X_validation, betas, show_matrix, classes, feature_select
 
     util.output_predictions("validation_output.csv", predictions, X_train.shape[0])
 
+
 # nb_train()
 # Meta method for building P(Y) and P(X|Y) probabilities from Naive Bayes.
 # This method will bring in a set of data (training data, typically separated from
@@ -75,6 +76,7 @@ def nb_train(data, beta, classes, feature_selection):
     likelihood_probabilities = determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_of_classes, feature_selection)
 
     return likelihood_probabilities, prior_probabilities
+
 
 # nb_predict()
 # Calculates the prediction function for Naive Bayes
@@ -120,6 +122,7 @@ def nb_predict(data, prior_probabilities, likelihood_probabilities, feature_sele
     print("Predictions shape: " + str(np.array(predictions).shape))
 
     return predictions
+
 
 # determine_prior_probabilities()
 # This calculates the prior ratio's of a given class / total examples.
@@ -197,6 +200,7 @@ def determine_likelihoods(data, non_zero_data, total_words_in_class, beta, num_o
     # save likelihood matrix using numpy pickle
     # likelihood_matrix.dump("likelihood_matrix.dat")
     return likelihood_matrix
+
 
 # determine_total_words_in_classes()
 # Calculating how many total words are in each classification.

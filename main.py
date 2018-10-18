@@ -42,14 +42,9 @@ def main():
 
     # This is a list of hard-coded parameters. They could all be easily brought in
     # as command line arguments, but this is likely unnecessary.
-    #betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1]
-    betas = [.01] # Range of betas for tuning Naive Bayes'.
+    betas = [.00001, .00005, .0001, .0005, .001, .005, .01, .05, .1, .5, 1] # Range of betas for tuning Naive Bayes'.
     beta = .01 # Beta variable for NB running on testing data.
-<<<<<<< HEAD
     num_of_iterations = 10 # Number of weight updates in logistic regression
-=======
-    num_of_iterations = 100 # Number of weight updates in logistic regression
->>>>>>> aabea2276a36f2c9bbb33a89527ffc0f8087abec
     learning_rate = .05 # Learning or eta term
     penalty_term = .05 # Penalty or lambda term
     show_matrix = False # Whether or not to show confusion matrix plot
@@ -66,9 +61,9 @@ def main():
     if args.is_tuning == True:
         print("Tuning mode on.")
         # Splits our data into training data and validation data.
-        #X_train, X_validation = train_test_split(training_data, test_size = .2)#, shuffle = True)
-        X_train, X_validation = train_test_split(training_data, test_size = .2, random_state = 42)
-
+        X_train, X_validation = train_test_split(training_data, test_size = .2, shuffle = True)
+        # If you want static validation data, use the line below
+        #X_train, X_validation = train_test_split(training_data, test_size = .2, random_state = 42)
 
         if use_naive_bayes == True:
             # Tuning our naive bayes' given a range of Beta variables.
@@ -81,10 +76,11 @@ def main():
         test_data = scipy.sparse.load_npz("testing_sparse.npz")
 
         if use_naive_bayes == True:
-            # Run Naive Bayes' against the testing data, no validation dataset.
+            # Run Naive Bayes' against the testing data, no validation dataset, and output predictions.
             nb.nb_solve(training_data, test_data, beta, classes, feature_selection)
         else:
-            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, feature_selection)
+            # Run Logistic Regression against the testing data, no validation dataset, and output predictions
+            lr.lr_solve(training_data, test_data, learning_rate, penalty_term, num_of_iterations, classes, feature_selection)
 
 
 if __name__ == "__main__":

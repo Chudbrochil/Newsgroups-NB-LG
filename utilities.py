@@ -35,6 +35,8 @@ def build_confusion_matrix(predictions, true_classes, classes, file_name):
 
     confusion_matrix_df.to_csv(file_name, sep=",", header=classes)
 
+
+# determine_most_important_features()
 # This gave us the most important features np list file. This is no longer used as we
 # have saved that file and read it in instead of it recomputing it on every run.
 def determine_most_important_features():
@@ -51,6 +53,7 @@ def determine_most_important_features():
     # print(most_important_features)
     # match_variable_nums(most_important_features)
     return most_important_features
+
 
 # match_variable_nums(): used to output top variables to a file
 def match_variable_nums(int_total_prob):

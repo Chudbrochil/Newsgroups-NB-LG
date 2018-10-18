@@ -14,8 +14,10 @@ training_column_sums = np.array([])
 # Trains logistic regression against some training data and then outputs predictions
 # for some given testing data. Learning rate, penalty term (lambda) and num. of iterations
 # are all tunable variables but they are brought in from main.
-def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations, feature_selection):
+def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_iterations, classes, feature_selection):
     global training_column_sums
+
+    num_of_classes = len(classes)
 
     if feature_selection:
         most_valuable_features = util.determine_most_important_features()
@@ -26,7 +28,7 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
         training_data_no_classifications = training_data[:, :-1]
         training_data_classifications = training_data[:, -1:]
 
-    W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations)
+    W = lr_train(training_data_no_classifications, training_data_classifications, learning_term, penalty_term, num_of_iterations, num_of_classes)
 
     column_of_ones = np.full((test_data.shape[0], 1), 1)
     X = scipy.sparse.csr_matrix(scipy.sparse.hstack((column_of_ones, test_data)), dtype = "float64")
@@ -44,6 +46,8 @@ def lr_solve(training_data, test_data, learning_term, penalty_term, num_of_itera
 # Trains using Gradient descents
 def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, penalty_term_list, classes, feature_selection, show_matrix):
     global training_column_sum
+
+    num_of_classes = len(classes)
     # use feature selection by Naive Bayes likelihood matrix
     if feature_selection:
         most_valuable_features = util.determine_most_important_features()
@@ -64,7 +68,7 @@ def lr_tuning(X_train, X_validation, num_of_iterations, learning_rate_list, pena
         for penalty_term in penalty_term_list:
 
             # train/learn the weights for the matrix W
-            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, num_of_iterations)
+            W = lr_train(X_train_data, X_train_classifications, learning_rate, penalty_term, num_of_iterations, num_of_classes)
 
             # append a column of 1's to the validation data, this is adding an extra feature of all 1's per PDF spec and Piazza
             column_of_ones = np.full((X_validation.shape[0], 1), 1)
@@ -125,12 +129,12 @@ def plot_lr_tuning(accuracies, num_of_iterations):
 # lr_train: Logistic reg. implementation using Gradient Descent to find the matrix W
 # that maximizes the probabilty we predict the correct class Y given features X
 # This function is completely based on the PDF of project 2 under 'Log. Reg. implementation'
-def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations):
+def lr_train(X_train, Y, learning_rate, penalty_term, num_of_iterations, num_of_classes):
 
     # num of examples
     m = X_train.shape[0]
     # num of classes
-    k = 20 # TODO: Hard coded variable (num_of_classes)
+    k = num_of_classes
     # num of features
     n = X_train.shape[1]
 
