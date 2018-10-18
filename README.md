@@ -19,7 +19,7 @@ utilities.py
 Miscellanous methods that are used between both algorithms and in main are found here. Includes methods like build_confusion_matrix, determine_most_important_features, and load_classes.
 
 main.py
-This includes the code for the command line interface and running our algorithms. An important part of main is this is where all the important parameters to tune are found such as beta, learning_rate, whether or not to show a confusion matrix. This is also where we load in all the files for training and testing.
+This includes the code for the command line interface and running our algorithms. An important part of main is this is where all the important parameters to tune are found such as beta, learning_rate, whether or not to show a confusion matrix, etc.. This is also where we load in all the files for training and testing.
 
 
 We have two command line options when running main.py.
