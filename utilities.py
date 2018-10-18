@@ -95,3 +95,19 @@ def load_classes(file_name):
         classes.append(split_line[1])
 
     return classes
+
+
+# convert_data_to_npz_file()
+# This method loads in the full data (including zero data) and converts it to
+# a csr_matrix. This effectively allows us to use it as non-zero data. This is
+# very necessary as the full data is on the order of ~1GB.
+def convert_data_to_npz_file():
+	data = pd.read_csv("testing.csv", header=None)
+	print("convert to values...")
+	data_values = data.values
+	data_values = data_values[:, 1:]
+	print("begin converting to csr_matrix...")
+	matrix_converted = scipy.sparse.csr_matrix(data_values)
+	# save the matrix to a file
+	print(str(type(matrix_converted)))
+	scipy.sparse.save_npz("testing_sparse.npz", matrix_converted)
