@@ -1,6 +1,8 @@
 This is the README for UNM CS529 Machine Learning Project 2.
 It includes a command line interface for execution.
 
+https://www.kaggle.com/c/project-2-topic-categorization-cs529-2018
+
 This was written by:
 Anthony Galczak, Tristin Glunt
 agalczak@unm.edu, tglunt@unm.edu
